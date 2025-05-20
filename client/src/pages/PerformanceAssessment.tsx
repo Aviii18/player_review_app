@@ -11,6 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient } from "@/lib/queryClient";
 import StarRating from "@/components/StarRating";
+import VideoPlayer from "@/components/VideoPlayer";
 import type { Player, Video } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
 
@@ -304,17 +305,13 @@ const PerformanceAssessment = () => {
 
                         return (
                           <div key={index} className="flex-shrink-0 w-64">
-                            <div 
-                              className="video-thumbnail h-36 bg-neutral-200 rounded cursor-pointer relative overflow-hidden"
-                              onClick={() => window.open(video.url, "_blank")}
-                            >
-                              {/* Placeholder video thumbnail */}
-                              <div className="absolute inset-0 flex items-center justify-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" className="text-white text-6xl" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                  <circle cx="12" cy="12" r="10"></circle>
-                                  <polygon points="10 8 16 12 10 16 10 8"></polygon>
-                                </svg>
-                              </div>
+                            <div className="h-36 w-full relative">
+                              <VideoPlayer
+                                videoUrl={video.url}
+                                title={video.title}
+                                className="w-full h-full object-cover rounded"
+                                triggerClassName="w-full h-full flex items-center justify-center bg-neutral-200 rounded"
+                              />
                             </div>
                             <div className="mt-2">
                               <p className="font-bold text-sm">{video.shotType}</p>
