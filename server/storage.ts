@@ -324,7 +324,7 @@ export class MemStorage implements IStorage {
       {
         playerId: 1,
         title: "Cover Drive",
-        url: "http://localhost:5000/assets/Video%201.mp4",
+        url: "/assets/Video 1.mp4",
         recordedDate: new Date("2023-07-31"),
         shotType: "Cover Drive",
         ballSpeed: "Medium",
@@ -333,7 +333,7 @@ export class MemStorage implements IStorage {
       {
         playerId: 1,
         title: "Straight Drive",
-        url: "http://localhost:5000/assets/Video%202.mp4",
+        url: "/assets/Video 2.mp4",
         recordedDate: new Date("2023-07-31"),
         shotType: "Straight Drive", 
         ballSpeed: "Fast",
@@ -342,7 +342,7 @@ export class MemStorage implements IStorage {
       {
         playerId: 1,
         title: "Pull Shot",
-        url: "http://localhost:5000/assets/Video%203.mp4",
+        url: "/assets/Video 3.mp4",
         recordedDate: new Date("2023-07-31"),
         shotType: "Pull Shot",
         ballSpeed: "Fast",
@@ -351,7 +351,7 @@ export class MemStorage implements IStorage {
       {
         playerId: 1,
         title: "Defensive Block",
-        url: "http://localhost:5000/assets/Video%204.mp4",
+        url: "/assets/Video 4.mp4",
         recordedDate: new Date("2023-07-31"),
         shotType: "Defensive Block",
         ballSpeed: "Medium",
