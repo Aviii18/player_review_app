@@ -13,14 +13,39 @@ interface VideoPlayerProps {
 const VideoPlayer = ({ videoUrl, title, thumbnail, className, triggerClassName }: VideoPlayerProps) => {
   const [isOpen, setIsOpen] = useState(false);
 
-  const getYouTubeEmbedUrl = (url: string) => {
-    // Handle various YouTube URL formats
-    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
-    const match = url.match(regExp);
-    
-    return match && match[2].length === 11
-      ? `https://www.youtube.com/embed/${match[2]}?autoplay=1`
-      : url;
+  const isLocalVideo = (url: string) => {
+    return url.endsWith('.mp4') || url.endsWith('.webm') || url.endsWith('.ogg');
+  };
+
+  const getVideoPlayer = () => {
+    if (isLocalVideo(videoUrl)) {
+      return (
+        <video 
+          src={videoUrl}
+          className={`w-full max-h-[500px] ${className}`}
+          controls
+          autoPlay
+        />
+      );
+    } else {
+      // Handle YouTube URLs
+      const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+      const match = videoUrl.match(regExp);
+      
+      const embedUrl = match && match[2].length === 11
+        ? `https://www.youtube.com/embed/${match[2]}?autoplay=1`
+        : videoUrl;
+        
+      return (
+        <iframe 
+          src={embedUrl} 
+          className={`w-full h-[500px] ${className}`}
+          title={title}
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+        />
+      );
+    }
   };
 
   return (
@@ -41,13 +66,7 @@ const VideoPlayer = ({ videoUrl, title, thumbnail, className, triggerClassName }
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
         <div className="aspect-w-16 aspect-h-9 mt-2">
-          <iframe 
-            src={getYouTubeEmbedUrl(videoUrl)} 
-            className={`w-full h-[500px] ${className}`}
-            title={title}
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-          ></iframe>
+          {getVideoPlayer()}
         </div>
       </DialogContent>
     </Dialog>

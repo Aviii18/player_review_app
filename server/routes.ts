@@ -1,7 +1,8 @@
-import type { Express, Request, Response } from "express";
+import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { z } from "zod";
+import path from "path";
 import { 
   insertPerformanceAssessmentSchema, 
   insertPerformanceMetricSchema,
@@ -10,6 +11,15 @@ import {
 } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Serve video assets
+  app.use('/assets', (req: Request, res: Response, next: NextFunction) => {
+    const videoPath = path.join(process.cwd(), 'attached_assets', req.path);
+    res.sendFile(videoPath, (err) => {
+      if (err) {
+        next();
+      }
+    });
+  });
   // Get all players
   app.get("/api/players", async (_req: Request, res: Response) => {
     const players = await storage.getPlayers();
