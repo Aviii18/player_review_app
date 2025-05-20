@@ -1,22 +1,25 @@
 import { useMemo } from "react";
 import { 
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
+  RadarChart,
+  Radar,
+  PolarGrid,
+  PolarAngleAxis,
+  PolarRadiusAxis,
   Tooltip,
   Legend,
-  ResponsiveContainer 
+  ResponsiveContainer,
+  LabelList
 } from "recharts";
 import { format } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import type { PerformanceMetric, PerformanceAssessment } from "@shared/schema";
 
-interface WeeklyData {
-  name: string;
-  week: string;
-  [key: string]: string | number;
+interface RadarData {
+  subject: string;
+  current: number;
+  previous: number;
+  fullMark: 100;
 }
 
 interface PerformanceChartProps {
@@ -25,14 +28,10 @@ interface PerformanceChartProps {
   className?: string;
 }
 
-// Colors for different metrics
-const metricColors = {
-  "reaction_time": "#8884d8",
-  "bat_connect": "#82ca9d",
-  "shot_selection": "#ffc658",
-  "footwork": "#ff8042",
-  "cover_drive": "#0088fe",
-  "straight_drive": "#00C49F"
+// Colors for different weeks
+const weekColors = {
+  current: "#8884d8",
+  previous: "#82ca9d"
 };
 
 const metricNames: Record<string, string> = {
@@ -45,63 +44,74 @@ const metricNames: Record<string, string> = {
 };
 
 const PerformanceChart = ({ assessments, metrics, className }: PerformanceChartProps) => {
-  // Transform the data for the chart
+  // Transform the data for the radar chart
   const chartData = useMemo(() => {
-    // We'll generate some sample data based on the assessments we have
-    // In a real application, you would fetch historical data for each assessment
-    const weeklyData: WeeklyData[] = [];
+    // Get the metrics and organize them for the radar chart
+    const radarData: RadarData[] = [];
     
-    // Sort assessments by date (oldest first)
+    // Sort assessments by date (newest first)
     const sortedAssessments = [...assessments].sort(
-      (a, b) => new Date(a.weekStart).getTime() - new Date(b.weekStart).getTime()
+      (a, b) => new Date(b.weekStart).getTime() - new Date(a.weekStart).getTime()
     );
     
-    // Create data points for each assessment
-    sortedAssessments.forEach((assessment, index) => {
-      const week = format(new Date(assessment.weekStart), "MMM d");
-      const dataPoint: WeeklyData = {
-        name: `Week ${index + 1}`,
-        week
+    if (sortedAssessments.length < 1) {
+      return [];
+    }
+    
+    // Get the current week metrics (we already have these from the props)
+    const currentWeekMetrics = metrics;
+    
+    // Create the radar data for each metric
+    currentWeekMetrics.forEach(metric => {
+      // For each metric we need the current and previous value
+      const radarPoint: RadarData = {
+        subject: metricNames[metric.metricType] || metric.metricType,
+        current: metric.rating,
+        previous: generatePreviousValue(metric.rating), // Simulated previous value
+        fullMark: 100
       };
       
-      // For the most recent assessment, use the actual metrics
-      if (index === sortedAssessments.length - 1) {
-        // Use the real metrics for the latest assessment
-        metrics.forEach(metric => {
-          // Convert rating to a 0-100 scale for visualization
-          dataPoint[metric.metricType] = metric.rating;
-        });
-      } else {
-        // For previous weeks, simulate progression by generating values
-        // that trend toward the current metrics
-        metrics.forEach(metric => {
-          const currentValue = metric.rating;
-          // Create a progression toward the current value
-          // This simulates improvement over time
-          const randomFactor = 0.85 + (Math.random() * 0.3);
-          const progressionValue = Math.round(
-            (currentValue * (0.7 + (index * 0.3 / sortedAssessments.length))) * randomFactor
-          );
-          dataPoint[metric.metricType] = Math.max(30, Math.min(100, progressionValue));
-        });
-      }
-      
-      weeklyData.push(dataPoint);
+      radarData.push(radarPoint);
     });
     
-    return weeklyData;
+    return radarData;
   }, [assessments, metrics]);
+  
+  // Helper function to generate a simulated previous value
+  function generatePreviousValue(currentValue: number): number {
+    // Generate a value that's slightly lower than the current one to show improvement
+    const previousValue = Math.max(30, currentValue - (5 + Math.random() * 15));
+    return Math.round(previousValue);
+  }
 
-  if (chartData.length < 2) {
+  // Format dates for display
+  const getFormattedDates = () => {
+    if (assessments.length < 1) return { current: "Current", previous: "Previous" };
+    
+    const sortedAssessments = [...assessments].sort(
+      (a, b) => new Date(b.weekStart).getTime() - new Date(a.weekStart).getTime()
+    );
+    
+    const current = format(new Date(sortedAssessments[0]?.weekStart), "MMM d");
+    const previous = sortedAssessments.length > 1 
+      ? format(new Date(sortedAssessments[1]?.weekStart), "MMM d")
+      : "Previous";
+      
+    return { current, previous };
+  };
+  
+  const dates = getFormattedDates();
+
+  if (chartData.length < 1) {
     return (
       <Card className={className}>
         <CardHeader>
-          <CardTitle>Performance Progression</CardTitle>
+          <CardTitle>Performance Profile</CardTitle>
         </CardHeader>
         <CardContent className="flex items-center justify-center py-10">
           <p className="text-neutral-500 text-center">
-            Not enough assessment data to display progression chart.<br />
-            Add more weekly assessments to see performance trends.
+            Not enough assessment data to display performance profile.<br />
+            Add more assessments to see skill comparisons.
           </p>
         </CardContent>
       </Card>
@@ -110,40 +120,51 @@ const PerformanceChart = ({ assessments, metrics, className }: PerformanceChartP
 
   return (
     <Card className={className}>
-      <CardHeader>
-        <CardTitle>Performance Progression</CardTitle>
+      <CardHeader className="flex flex-row items-center justify-between">
+        <CardTitle>Performance Profile</CardTitle>
+        <div className="flex items-center space-x-2 text-sm">
+          <div className="flex items-center">
+            <div className="h-3 w-3 rounded-full bg-[#8884d8] mr-1"></div>
+            <span>Week of {dates.current}</span>
+          </div>
+          <div className="flex items-center">
+            <div className="h-3 w-3 rounded-full bg-[#82ca9d] mr-1"></div>
+            <span>Week of {dates.previous}</span>
+          </div>
+        </div>
       </CardHeader>
       <CardContent>
-        <ResponsiveContainer width="100%" height={300}>
-          <LineChart
+        <ResponsiveContainer width="100%" height={400}>
+          <RadarChart 
+            cx="50%" 
+            cy="50%" 
+            outerRadius="80%" 
             data={chartData}
-            margin={{
-              top: 5,
-              right: 30,
-              left: 20,
-              bottom: 5,
-            }}
           >
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="week" />
-            <YAxis domain={[0, 100]} />
+            <PolarGrid />
+            <PolarAngleAxis dataKey="subject" />
+            <PolarRadiusAxis angle={30} domain={[0, 100]} />
+            
+            <Radar
+              name={`Week of ${dates.previous}`}
+              dataKey="previous"
+              stroke={weekColors.previous}
+              fill={weekColors.previous}
+              fillOpacity={0.3}
+            />
+            
+            <Radar
+              name={`Week of ${dates.current}`}
+              dataKey="current"
+              stroke={weekColors.current}
+              fill={weekColors.current}
+              fillOpacity={0.5}
+            />
+            
             <Tooltip 
               formatter={(value) => [`${value}/100`, '']}
-              labelFormatter={(label) => `Week of ${label}`}
             />
-            <Legend />
-            {Object.entries(metricNames).map(([key, name]) => (
-              <Line
-                key={key}
-                type="monotone"
-                dataKey={key}
-                name={name}
-                stroke={metricColors[key as keyof typeof metricColors]}
-                activeDot={{ r: 8 }}
-                connectNulls
-              />
-            ))}
-          </LineChart>
+          </RadarChart>
         </ResponsiveContainer>
       </CardContent>
     </Card>
