@@ -11,12 +11,19 @@ import {
 } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Serve video assets
-  app.use('/assets', (req: Request, res: Response, next: NextFunction) => {
-    const videoPath = path.join(process.cwd(), 'attached_assets', req.path);
+  // Serve video assets - setting proper MIME type
+  app.get('/assets/:filename', (req: Request, res: Response) => {
+    const filename = req.params.filename;
+    const videoPath = path.join(process.cwd(), 'attached_assets', filename);
+    
+    console.log('Serving video:', videoPath);
+    
+    // Set proper content type for videos
+    res.setHeader('Content-Type', 'video/mp4');
     res.sendFile(videoPath, (err) => {
       if (err) {
-        next();
+        console.error('Error serving video:', err);
+        res.status(404).send('Video not found');
       }
     });
   });
