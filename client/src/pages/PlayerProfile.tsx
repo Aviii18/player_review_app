@@ -316,7 +316,7 @@ const PlayerProfile = () => {
                             <span className="font-mono">{metric.value}</span>
                           </div>
                           <RatingBar rating={metric.rating} />
-                          <div className="mt-3 text-sm text-neutral-300">
+                          <div className="mt-3 text-sm text-neutral-600">
                             <p>{metric.notes}</p>
                           </div>
                         </div>
