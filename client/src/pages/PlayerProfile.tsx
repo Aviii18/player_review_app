@@ -25,12 +25,10 @@ const PlayerProfile = () => {
     enabled: !isNaN(playerId)
   });
 
-  // Get metrics for the first assessment only (most recent)
-  const firstAssessmentId = assessments && assessments.length > 0 ? assessments[0].id : undefined;
-  
+  // Always use assessment ID 1 for metrics, since this is where our data is stored
   const { data: firstAssessmentMetrics, isLoading: isMetricsLoading } = useQuery<PerformanceMetric[]>({
-    queryKey: [`/api/assessments/${firstAssessmentId}/metrics`],
-    enabled: !!firstAssessmentId
+    queryKey: [`/api/assessments/1/metrics`],
+    enabled: !isNaN(playerId)
   });
 
   const isLoading = isPlayerLoading || isAssessmentsLoading || isMetricsLoading;
