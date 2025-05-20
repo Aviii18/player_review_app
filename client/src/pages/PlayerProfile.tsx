@@ -231,7 +231,28 @@ const PlayerProfile = () => {
       
       <h3 className="text-xl font-bold text-neutral-400 mb-4">Weekly Performance Assessment</h3>
 
-      {isLoading ? (
+      {!isLoading && (!assessments || assessments.length === 0) ? (
+        <Card className="mb-6">
+          <CardContent className="flex items-center justify-center py-10">
+            <div className="text-center">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-neutral-300 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+              </svg>
+              <p className="text-neutral-500 mb-2">No assessments available yet</p>
+              <p className="text-sm text-neutral-400">Complete a performance assessment to view weekly progress</p>
+              <Link href={`/players/${player?.id}/assessment`}>
+                <Button className="mt-4 bg-secondary text-white px-4 py-2 rounded-lg flex items-center mx-auto">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-plus mr-1">
+                    <path d="M5 12h14"></path>
+                    <path d="M12 5v14"></path>
+                  </svg>
+                  <span>New Assessment</span>
+                </Button>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+      ) : isLoading ? (
         <div className="space-y-6">
           {[...Array(3)].map((_, i) => (
             <Card key={i}>
