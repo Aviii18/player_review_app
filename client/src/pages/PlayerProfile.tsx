@@ -167,20 +167,20 @@ const PlayerProfile = () => {
                     <div>
                       <h3 className="font-bold text-lg">Batting Stats</h3>
                       <div className="grid grid-cols-2 gap-2 mt-2">
-                        <div className="bg-neutral-100 p-3 rounded">
-                          <p className="text-xs text-neutral-300">Avg. Reaction Time</p>
+                        <div className="bg-primary/10 p-3 rounded">
+                          <p className="text-xs text-neutral-600 font-medium">Avg. Reaction Time</p>
                           <p className="font-mono font-bold">0.72s</p>
                         </div>
-                        <div className="bg-neutral-100 p-3 rounded">
-                          <p className="text-xs text-neutral-300">Bat Connect %</p>
+                        <div className="bg-primary/10 p-3 rounded">
+                          <p className="text-xs text-neutral-600 font-medium">Bat Connect %</p>
                           <p className="font-mono font-bold">87%</p>
                         </div>
-                        <div className="bg-neutral-100 p-3 rounded">
-                          <p className="text-xs text-neutral-300">Shot Accuracy</p>
+                        <div className="bg-primary/10 p-3 rounded">
+                          <p className="text-xs text-neutral-600 font-medium">Shot Selection Accuracy</p>
                           <p className="font-mono font-bold">82%</p>
                         </div>
-                        <div className="bg-neutral-100 p-3 rounded">
-                          <p className="text-xs text-neutral-300">Footwork Score</p>
+                        <div className="bg-primary/10 p-3 rounded">
+                          <p className="text-xs text-neutral-600 font-medium">Footwork Score</p>
                           <p className="font-mono font-bold">7.5/10</p>
                         </div>
                       </div>
