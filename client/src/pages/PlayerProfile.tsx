@@ -309,6 +309,111 @@ const PlayerProfile = () => {
             );
           })
       )}
+
+      {/* Video Library Section */}
+      <h3 className="text-xl font-bold text-neutral-400 mb-4 mt-8">Video Library</h3>
+      
+      {/* Week 1 */}
+      <Card className="mb-6">
+        <div className="bg-primary text-white px-6 py-3 flex justify-between items-center rounded-t-lg">
+          <h4 className="font-bold">Week of July 24 - July 30, 2023</h4>
+        </div>
+        <CardContent className="p-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {["Cover Drive", "Pull Shot", "Straight Drive", "Defensive Block"].map((shotType, index) => (
+              <div key={index} className="video-thumbnail bg-neutral-100 rounded-lg overflow-hidden">
+                <div className="h-36 relative">
+                  <div className="absolute inset-0 flex items-center justify-center bg-neutral-200">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="text-primary" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="12" cy="12" r="10"></circle>
+                      <polygon points="10 8 16 12 10 16 10 8"></polygon>
+                    </svg>
+                  </div>
+                </div>
+                <div className="p-3">
+                  <p className="font-medium text-sm">{shotType}</p>
+                  <div className="flex items-center mt-1">
+                    <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full mr-1">
+                      {index % 2 === 0 ? "Middle" : "Edge"}
+                    </span>
+                    <span className="text-xs bg-neutral-200 text-neutral-600 px-2 py-0.5 rounded-full">
+                      {index % 2 === 0 ? "Medium" : "Fast"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+      
+      {/* Week 2 */}
+      <Card className="mb-6">
+        <div className="bg-primary text-white px-6 py-3 flex justify-between items-center rounded-t-lg">
+          <h4 className="font-bold">Week of July 17 - July 23, 2023</h4>
+        </div>
+        <CardContent className="p-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {["Cover Drive", "Sweep Shot", "Square Cut", "Flick"].map((shotType, index) => (
+              <div key={index} className="video-thumbnail bg-neutral-100 rounded-lg overflow-hidden">
+                <div className="h-36 relative">
+                  <div className="absolute inset-0 flex items-center justify-center bg-neutral-200">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="text-primary" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="12" cy="12" r="10"></circle>
+                      <polygon points="10 8 16 12 10 16 10 8"></polygon>
+                    </svg>
+                  </div>
+                </div>
+                <div className="p-3">
+                  <p className="font-medium text-sm">{shotType}</p>
+                  <div className="flex items-center mt-1">
+                    <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full mr-1">
+                      {index % 3 === 0 ? "Middle" : index % 3 === 1 ? "Edge" : "Missed"}
+                    </span>
+                    <span className="text-xs bg-neutral-200 text-neutral-600 px-2 py-0.5 rounded-full">
+                      {index % 2 === 0 ? "Slow" : "Medium"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+      
+      {/* Week 3 */}
+      <Card className="mb-6">
+        <div className="bg-primary text-white px-6 py-3 flex justify-between items-center rounded-t-lg">
+          <h4 className="font-bold">Week of July 10 - July 16, 2023</h4>
+        </div>
+        <CardContent className="p-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {["Cover Drive", "Reverse Sweep", "On Drive", "Defensive Block"].map((shotType, index) => (
+              <div key={index} className="video-thumbnail bg-neutral-100 rounded-lg overflow-hidden">
+                <div className="h-36 relative">
+                  <div className="absolute inset-0 flex items-center justify-center bg-neutral-200">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="text-primary" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="12" cy="12" r="10"></circle>
+                      <polygon points="10 8 16 12 10 16 10 8"></polygon>
+                    </svg>
+                  </div>
+                </div>
+                <div className="p-3">
+                  <p className="font-medium text-sm">{shotType}</p>
+                  <div className="flex items-center mt-1">
+                    <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full mr-1">
+                      {index % 4 === 0 ? "Middle" : index % 4 === 1 ? "Edge" : index % 4 === 2 ? "Bottom" : "Missed"}
+                    </span>
+                    <span className="text-xs bg-neutral-200 text-neutral-600 px-2 py-0.5 rounded-full">
+                      {index % 3 === 0 ? "Fast" : index % 3 === 1 ? "Medium" : "Slow"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };
