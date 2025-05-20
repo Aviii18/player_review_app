@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import RatingBar from "@/components/RatingBar";
 import VideoPlayer from "@/components/VideoPlayer";
 import NotesList from "@/components/NotesList";
+import PerformanceChart from "@/components/PerformanceChart";
 import type { Player, PerformanceAssessment, PerformanceMetric } from "@shared/schema";
 
 const PlayerProfile = () => {
@@ -221,6 +222,15 @@ const PlayerProfile = () => {
         )
       )}
 
+      {/* Performance Progression Chart */}
+      {!isLoading && assessments && assessments.length > 0 && firstAssessmentMetrics && (
+        <PerformanceChart 
+          assessments={assessments} 
+          metrics={firstAssessmentMetrics} 
+          className="mb-6"
+        />
+      )}
+      
       <h3 className="text-xl font-bold text-neutral-400 mb-4">Weekly Performance Assessment</h3>
 
       {isLoading ? (
