@@ -11,8 +11,8 @@ import NotesList from "@/components/NotesList";
 import type { Player, PerformanceAssessment, PerformanceMetric } from "@shared/schema";
 
 const PlayerProfile = () => {
-  const { id } = useParams();
-  const playerId = parseInt(id);
+  const params = useParams<{ id: string }>();
+  const playerId = params.id ? parseInt(params.id) : 0;
 
   const { data: player, isLoading: isPlayerLoading } = useQuery<Player>({
     queryKey: [`/api/players/${playerId}`],
@@ -24,15 +24,15 @@ const PlayerProfile = () => {
     enabled: !isNaN(playerId)
   });
 
-  // Get the metrics for each assessment
-  const metricsQueries = assessments?.map(assessment => 
-    useQuery<PerformanceMetric[]>({
-      queryKey: [`/api/assessments/${assessment.id}/metrics`],
-      enabled: !!assessment
-    })
-  ) || [];
+  // Get metrics for the first assessment only (most recent)
+  const firstAssessmentId = assessments && assessments.length > 0 ? assessments[0].id : undefined;
+  
+  const { data: firstAssessmentMetrics, isLoading: isMetricsLoading } = useQuery<PerformanceMetric[]>({
+    queryKey: [`/api/assessments/${firstAssessmentId}/metrics`],
+    enabled: !!firstAssessmentId
+  });
 
-  const isLoading = isPlayerLoading || isAssessmentsLoading || metricsQueries.some(q => q.isLoading);
+  const isLoading = isPlayerLoading || isAssessmentsLoading || isMetricsLoading;
 
   // Mock data for profile notes
   const profileNotes = [
@@ -244,7 +244,8 @@ const PlayerProfile = () => {
         assessments && assessments
           .sort((a, b) => new Date(b.weekStart).getTime() - new Date(a.weekStart).getTime())
           .map((assessment, index) => {
-            const metrics = metricsQueries[index]?.data || [];
+            // For the first assessment, use the fetched metrics
+            const metrics = index === 0 ? firstAssessmentMetrics || [] : [];
             const weekNumber = index + 1;
             const weekNotes = getWeeklyNotes(weekNumber);
             
@@ -266,10 +267,10 @@ const PlayerProfile = () => {
                 </div>
                 <CardContent className="p-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {metrics.map(metric => {
+                    {metrics.map((metric: PerformanceMetric) => {
                       const metricDisplayName = metric.metricType
                         .split('_')
-                        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                        .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
                         .join(' ');
                         
                       return (

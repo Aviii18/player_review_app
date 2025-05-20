@@ -21,8 +21,8 @@ interface ProblemArea {
 }
 
 const PerformanceAssessment = () => {
-  const { id } = useParams();
-  const playerId = parseInt(id);
+  const params = useParams<{ id: string }>();
+  const playerId = params.id ? parseInt(params.id) : 0;
   const [_, navigate] = useLocation();
   const { toast } = useToast();
 
