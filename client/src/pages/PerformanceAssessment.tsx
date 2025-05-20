@@ -213,7 +213,7 @@ const PerformanceAssessment = () => {
             <CardContent className="p-4">
               <div className="flex flex-wrap gap-2">
                 <div className="w-full md:w-auto">
-                  <Label className="block text-sm text-neutral-300 mb-1">Shot Type</Label>
+                  <Label className="block text-sm text-neutral-600 font-medium mb-1">Shot Type</Label>
                   <Select value={shotTypeFilter} onValueChange={setShotTypeFilter}>
                     <SelectTrigger className="w-full md:w-48">
                       <SelectValue placeholder="All Shot Types" />
@@ -229,7 +229,7 @@ const PerformanceAssessment = () => {
                   </Select>
                 </div>
                 <div className="w-full md:w-auto">
-                  <Label className="block text-sm text-neutral-300 mb-1">Ball Speed</Label>
+                  <Label className="block text-sm text-neutral-600 font-medium mb-1">Ball Speed</Label>
                   <Select value={ballSpeedFilter} onValueChange={setBallSpeedFilter}>
                     <SelectTrigger className="w-full md:w-48">
                       <SelectValue placeholder="All Speeds" />
@@ -243,7 +243,7 @@ const PerformanceAssessment = () => {
                   </Select>
                 </div>
                 <div className="w-full md:w-auto">
-                  <Label className="block text-sm text-neutral-300 mb-1">Bat Connect</Label>
+                  <Label className="block text-sm text-neutral-600 font-medium mb-1">Bat Connect</Label>
                   <Select value={batConnectFilter} onValueChange={setBatConnectFilter}>
                     <SelectTrigger className="w-full md:w-48">
                       <SelectValue placeholder="All" />
@@ -318,7 +318,7 @@ const PerformanceAssessment = () => {
                             </div>
                             <div className="mt-2">
                               <p className="font-bold text-sm">{video.shotType}</p>
-                              <p className="text-xs text-neutral-300">Ball Speed: {video.ballSpeed}</p>
+                              <p className="text-xs text-neutral-600 font-medium">Ball Speed: {video.ballSpeed}</p>
                               <div className="flex items-center mt-1">
                                 <span className={`text-xs ${badgeColor} text-white px-2 py-0.5 rounded-full`}>
                                   {video.batConnect}
