@@ -1,0 +1,61 @@
+Page 1 – Player list
+
+·        Coach will see profiles of multiple players on the page
+
+·        Each profile will have player picture, name, batch in which he/she is enrolled
+
+·        Coach will click on one player’s profile to see the details
+
+·        Coach will be taken to page 2 for viewing the details of the clicked profile
+
+ 
+
+Page 2 – Player profile
+
+·        The selected player’s profile page will show his/her weekly performance  assessment for last 4 weeks
+
+·        Each weekly performance assessment will be broken down into following criteria
+
+o   Reaction time
+
+o   Bat Connect
+
+o   Cover Drive
+
+o   Straight Drive
+
+·        For each criteria, there will be a bar showing color based rating (red, green, yellow) and a video icon.
+
+o   The video will be pulled from youtube link
+
+o   The video should play on clicking the icon
+
+·        There should be an icon which the coach can click on see notes at the profile level
+
+·        There should also be an icon which the coach can click on to see the notes for each week
+
+·        At the profile level, Coach will be able to click on an icon to initiate a new performance assessment. This shall take the coach to page 3.
+
+ 
+
+Page 3 – Player performance assessment
+
+·        This will be a page where coach can do performance assessment for a player
+
+·        On this page, the coach will see the player name, batch
+
+·        The coach will see multiple videos of this player from the latest week. Multiple videos list can be shown in carousel format
+
+·        The videos will be pulled from specific youtube links, one for each video
+
+·        The coach will be able to filter the list to see videos for specific Shot type, Ball Speed, Bat Connect
+
+·        The coach will be able to click on a video icon to play it
+
+·        After viewing one video, coach can close it and view next video
+
+·        Coach will be able to take notes on this page. These notes should be associated with this player’s profile for this performance assessment
+
+·        Coach will be able to select a problem area from a drop down for this player’s performance assessment and give star rating for each problem area. This is the list of problem areas that the coach can select from: Bat connect, Foot Movement, Bat Swing, Weight shifting
+
+·        Coach will be able to add notes against each problem area
