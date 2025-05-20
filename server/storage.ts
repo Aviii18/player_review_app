@@ -292,20 +292,24 @@ export class MemStorage implements IStorage {
     });
     
     // Add metrics for the first assessment (most recent)
-    const metricTypes = ["reaction_time", "bat_connect", "cover_drive", "straight_drive"];
-    const values = ["0.65s", "85%", "70%", "85%"];
-    const ratings = [90, 75, 55, 75]; // Corresponding to green, yellow, red, yellow
+    const metricTypes = ["reaction_time", "bat_connect", "shot_selection", "footwork", "cover_drive", "straight_drive"];
+    const values = ["0.65s", "85%", "78%", "7.5/10", "70%", "85%"];
+    const ratings = [90, 75, 65, 70, 55, 75]; // Corresponding to green, yellow, yellow, yellow, red, yellow
     const notes = [
       "Quick response to both fast and spin bowling this week.",
       "Middle of the bat connection has improved, but still inconsistent against spin.",
+      "Good selection against pace, but needs work against spin bowling. Often chooses wrong shot for delivery type.",
+      "Lateral movement is strong, but front-to-back transitions need improvement. Balance issues on off-side play.",
       "Weight transfer issues affecting shot placement. Elbow positioning improved.",
       "Improved head position. Follow-through still needs work."
     ];
     const videoUrls = [
-      "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-      "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-      "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-      "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+      "/assets/Video 1.mp4",
+      "/assets/Video 2.mp4",
+      "/assets/Video 3.mp4",
+      "/assets/Video 4.mp4",
+      "/assets/Video 1.mp4",
+      "/assets/Video 2.mp4"
     ];
     
     metricTypes.forEach((type, index) => {
