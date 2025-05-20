@@ -36,6 +36,7 @@ const PerformanceAssessment = () => {
   const [ballSpeedFilter, setBallSpeedFilter] = useState("All Speeds");
   const [batConnectFilter, setBatConnectFilter] = useState("All");
   const [sessionNotes, setSessionNotes] = useState("");
+  const [focusAreas, setFocusAreas] = useState<string[]>([]);
   const [problemAreas, setProblemAreas] = useState<ProblemArea[]>([
     { type: "bat_connect", rating: 0, notes: "" },
     { type: "foot_movement", rating: 0, notes: "" }
@@ -365,6 +366,36 @@ const PerformanceAssessment = () => {
                     value={sessionNotes}
                     onChange={(e) => setSessionNotes(e.target.value)}
                   />
+                </div>
+
+                {/* Focus Areas */}
+                <div className="mb-4">
+                  <Label className="block font-bold mb-2">Current Focus Areas</Label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {["Reaction time", "Bat connect", "Shot selection accuracy", "Footwork"].map((area) => (
+                      <div key={area} className="flex items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          id={area.replace(/\s+/g, '-').toLowerCase()}
+                          checked={focusAreas.includes(area)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setFocusAreas([...focusAreas, area]);
+                            } else {
+                              setFocusAreas(focusAreas.filter(a => a !== area));
+                            }
+                          }}
+                          className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                        />
+                        <label
+                          htmlFor={area.replace(/\s+/g, '-').toLowerCase()}
+                          className="text-sm font-medium text-gray-700"
+                        >
+                          {area}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
                 </div>
 
                 {/* Problem Areas */}
