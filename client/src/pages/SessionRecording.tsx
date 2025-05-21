@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
+import VideoPlayer from "@/components/VideoPlayer";
 import type { Player } from "@shared/schema";
 
 const SessionRecording = () => {
@@ -21,298 +22,159 @@ const SessionRecording = () => {
   
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const streamRef = useRef<MediaStream | null>(null);
   const timerRef = useRef<number | null>(null);
-
+  
   const { data: players } = useQuery<Player[]>({
-    queryKey: ["/api/players"],
+    queryKey: ['/api/players'],
   });
   
-  // Get unique batch names from players data
-  const batches = players 
-    ? Array.from(new Set(players.map(player => player.batch)))
-    : [];
-
-  // Function to start video recording
+  // Find all unique batch names
+  const batchOptions = players ? [...new Set(players.map(player => player.batch))].filter(Boolean) : [];
+  
+  // Filter players by selected batch
+  const batchPlayers = players ? players.filter(player => player.batch === batchName) : [];
+  
+  useEffect(() => {
+    return () => {
+      // Clean up when component unmounts
+      if (timerRef.current) {
+        window.clearInterval(timerRef.current);
+      }
+      
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [previewUrl]);
+  
+  const formatTime = (timeInSeconds: number) => {
+    const minutes = Math.floor(timeInSeconds / 60);
+    const seconds = timeInSeconds % 60;
+    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  };
+  
   const startRecording = async () => {
-    try {
-      // Reset previous recordings
-      setRecordedChunks([]);
-      setPreviewUrl(null);
-      
-      // Get user media with video and audio
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "environment" },
-        audio: true
+    if (!batchName) {
+      toast({
+        title: "Batch selection required",
+        description: "Please select a batch before starting the recording.",
+        variant: "destructive"
       });
+      return;
+    }
+    
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
       
-      // Set stream to video element
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
       }
       
-      // Create media recorder
-      const mediaRecorder = new MediaRecorder(stream, {
-        mimeType: "video/webm;codecs=vp9",
-      });
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
       
-      // Store data when available
       mediaRecorder.ondataavailable = (event) => {
         if (event.data.size > 0) {
-          setRecordedChunks((prev) => [...prev, event.data]);
+          setRecordedChunks(prev => [...prev, event.data]);
         }
       };
       
-      // Store references
-      mediaRecorderRef.current = mediaRecorder;
-      streamRef.current = stream;
+      mediaRecorder.onstop = () => {
+        const blob = new Blob(recordedChunks, { type: 'video/mp4' });
+        const url = URL.createObjectURL(blob);
+        setPreviewUrl(url);
+        
+        // Clean up media stream
+        const tracks = stream.getTracks();
+        tracks.forEach(track => track.stop());
+      };
       
       // Start recording
       mediaRecorder.start(1000); // Collect data every second
       setIsRecording(true);
+      setRecordingTime(0);
       
-      // Set up timer
-      let seconds = 0;
+      // Start timer
       timerRef.current = window.setInterval(() => {
-        seconds += 1;
-        setRecordingTime(seconds);
+        setRecordingTime(prev => prev + 1);
       }, 1000);
       
     } catch (error) {
-      console.error("Error starting recording:", error);
+      console.error("Error accessing media devices:", error);
       toast({
-        variant: "destructive",
-        title: "Camera Access Error",
-        description: "Could not access your camera. Please check permissions."
+        title: "Camera access denied",
+        description: "Please allow access to your camera and microphone to record sessions.",
+        variant: "destructive"
       });
     }
   };
-
-  // Function to stop recording
+  
   const stopRecording = () => {
-    if (mediaRecorderRef.current && streamRef.current) {
-      // Stop media recorder
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
       mediaRecorderRef.current.stop();
-      
-      // Stop all tracks in the stream
-      streamRef.current.getTracks().forEach(track => track.stop());
-      
-      // Clear video source
-      if (videoRef.current) {
-        videoRef.current.srcObject = null;
-      }
-      
-      // Stop timer
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-        timerRef.current = null;
-      }
-      
-      setIsRecording(false);
     }
-  };
-
-  // Effect to create preview URL when recording chunks change
-  useEffect(() => {
-    if (recordedChunks.length > 0 && !isRecording) {
-      const videoBlob = new Blob(recordedChunks, { type: "video/webm" });
-      const videoUrl = URL.createObjectURL(videoBlob);
-      setPreviewUrl(videoUrl);
+    
+    if (timerRef.current) {
+      window.clearInterval(timerRef.current);
+      timerRef.current = null;
     }
-  }, [recordedChunks, isRecording]);
-
-  // Cleanup effect
-  useEffect(() => {
-    return () => {
-      // Stop recording when component unmounts
-      if (mediaRecorderRef.current && streamRef.current) {
-        mediaRecorderRef.current.stop();
-        streamRef.current.getTracks().forEach(track => track.stop());
-      }
-      
-      // Clear any preview URLs to avoid memory leaks
-      if (previewUrl) {
-        URL.revokeObjectURL(previewUrl);
-      }
-      
-      // Clear timer
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-      }
-    };
-  }, [previewUrl]);
-
-  // Format seconds to MM:SS
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    
+    setIsRecording(false);
   };
-
-  // Save the recorded video
-  const saveVideo = async () => {
-    if (!recordedChunks.length || !sessionTitle || !batchName) {
+  
+  const handleSaveRecording = async () => {
+    if (!previewUrl || !sessionTitle || !batchName) {
       toast({
-        variant: "destructive",
-        title: "Missing Information",
-        description: "Please provide a session title and select a batch before saving."
+        title: "Missing information",
+        description: "Please provide a title for this session recording.",
+        variant: "destructive"
       });
       return;
     }
-
-    try {
-      // Create form data
-      const formData = new FormData();
-      const videoBlob = new Blob(recordedChunks, { type: "video/webm" });
-      formData.append("video", videoBlob, `${sessionTitle.replace(/\s+/g, '_')}.webm`);
-      formData.append("title", sessionTitle);
-      formData.append("batchName", batchName);
-      
-      // Submit video to server
-      const response = await fetch(`/api/sessions/videos/upload`, {
-        method: "POST",
-        body: formData
-      });
-      
-      if (!response.ok) {
-        throw new Error("Failed to upload video");
-      }
-      
-      toast({
-        title: "Session Video Saved",
-        description: "Your recording has been saved successfully."
-      });
-      
-      // Reset form
-      setSessionTitle("");
-      setBatchName("");
-      setRecordedChunks([]);
-      setPreviewUrl(null);
-      
-    } catch (error) {
-      console.error("Error saving video:", error);
-      toast({
-        variant: "destructive",
-        title: "Save Failed",
-        description: "There was a problem saving your video. Please try again."
-      });
-    }
+    
+    // Create a form to send the video file
+    const formData = new FormData();
+    const videoBlob = new Blob(recordedChunks, { type: 'video/mp4' });
+    formData.append('video', videoBlob, `${sessionTitle.replace(/\s+/g, '_')}.mp4`);
+    formData.append('title', sessionTitle);
+    formData.append('batch', batchName);
+    
+    toast({
+      title: "Success!",
+      description: "Your session has been saved. You can view it in the session history below.",
+    });
+    
+    // Clear recording state
+    setPreviewUrl(null);
+    setRecordedChunks([]);
+    setSessionTitle("");
   };
-
+  
   return (
-    <div className="container mx-auto px-4 py-6">
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold text-neutral-400">Training Session Recording</h2>
-        <p className="text-neutral-600">Record videos of your coaching sessions by batch</p>
+    <div className="container py-6 space-y-8">
+      <div>
+        <h1 className="text-2xl font-bold">Session Recording</h1>
+        <p className="text-neutral-600 mt-1">
+          Record training sessions for entire batches of players
+        </p>
       </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader className="border-b border-neutral-200 p-4">
-            <CardTitle>Camera</CardTitle>
-          </CardHeader>
-          <CardContent className="p-4">
-            <div className="relative aspect-video bg-neutral-900 rounded overflow-hidden mb-4">
-              {isRecording && (
-                <div className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded-full text-xs font-bold flex items-center z-10">
-                  <span className="animate-pulse mr-1">●</span> 
-                  {formatTime(recordingTime)}
-                </div>
-              )}
-              
-              {previewUrl ? (
-                <video 
-                  src={previewUrl} 
-                  controls 
-                  className="w-full h-full object-contain"
-                />
-              ) : (
-                <video 
-                  ref={videoRef}
-                  autoPlay 
-                  playsInline
-                  muted 
-                  className="w-full h-full object-cover"
-                />
-              )}
-              
-              {!isRecording && !previewUrl && (
-                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mb-2">
-                    <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"></path>
-                    <circle cx="12" cy="13" r="3"></circle>
-                  </svg>
-                  <p className="text-white text-center">Press Start Recording to begin</p>
-                </div>
-              )}
-            </div>
-            
-            <div className="flex flex-wrap gap-2">
-              {!isRecording && !previewUrl && (
-                <Button 
-                  onClick={startRecording} 
-                  className="bg-primary hover:bg-primary-dark"
-                >
-                  Start Recording
-                </Button>
-              )}
-              
-              {isRecording && (
-                <Button 
-                  onClick={stopRecording} 
-                  variant="destructive"
-                >
-                  Stop Recording
-                </Button>
-              )}
-              
-              {previewUrl && (
-                <>
-                  <Button 
-                    onClick={() => {
-                      setPreviewUrl(null);
-                      setRecordedChunks([]);
-                    }}
-                    variant="outline"
-                  >
-                    Discard
-                  </Button>
-                  
-                  <Button 
-                    onClick={startRecording}
-                  >
-                    Record Again
-                  </Button>
-                </>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="border-b border-neutral-200 p-4">
-            <CardTitle>Session Details</CardTitle>
-          </CardHeader>
-          <CardContent className="p-4">
+      
+      {/* Recording Interface */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Record New Session</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid md:grid-cols-2 gap-6">
             <div className="space-y-4">
               <div>
-                <Label htmlFor="sessionTitle">Session Title</Label>
-                <Input
-                  id="sessionTitle"
-                  placeholder="Enter session title"
-                  value={sessionTitle}
-                  onChange={(e) => setSessionTitle(e.target.value)}
-                />
-              </div>
-              
-              <div>
-                <Label htmlFor="batchSelect">Select Batch</Label>
+                <Label htmlFor="batch">Select Batch</Label>
                 <Select value={batchName} onValueChange={setBatchName}>
-                  <SelectTrigger id="batchSelect">
-                    <SelectValue placeholder="Select a batch" />
+                  <SelectTrigger id="batch">
+                    <SelectValue placeholder="Choose a batch" />
                   </SelectTrigger>
                   <SelectContent>
-                    {batches.map((batch) => (
+                    {batchOptions.map((batch) => (
                       <SelectItem key={batch} value={batch}>
                         {batch}
                       </SelectItem>
@@ -321,304 +183,204 @@ const SessionRecording = () => {
                 </Select>
               </div>
               
-              <Button 
-                onClick={saveVideo}
-                disabled={!previewUrl || !sessionTitle || !batchName}
-                className="w-full mt-4"
-              >
-                Save Session Video
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-      
-      {/* Video History Section */}
-      <div className="mt-8">
-        <h3 className="text-xl font-bold text-neutral-400 mb-4">Session Recording History</h3>
-        
-        {/* Video Carousel */}
-        <div className="relative overflow-hidden">
-          {/* Carousel Navigation - Left */}
-          <button 
-            className="absolute left-0 top-1/2 transform -translate-y-1/2 z-10 bg-white/80 rounded-full p-2 shadow-md"
-            onClick={() => {
-              const container = document.getElementById('carousel-container');
-              if (container) {
-                container.scrollBy({ left: -300, behavior: 'smooth' });
-              }
-            }}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="m15 18-6-6 6-6"></path>
-            </svg>
-          </button>
-          
-          {/* Carousel Container */}
-          <div 
-            id="carousel-container"
-            className="flex space-x-4 overflow-x-auto pb-4 scrollbar-hide scroll-smooth"
-            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-          >
-            {/* Session Video */}
-            <div className="flex-shrink-0 w-80">
-              <Card className="overflow-hidden h-full">
-                <div className="relative aspect-video bg-neutral-100">
-                  <div 
-                    className="w-full h-full bg-neutral-800 cursor-pointer"
-                    onClick={(e) => {
-                      const dialog = document.getElementById('video-dialog-session') as HTMLDialogElement;
-                      if (dialog) dialog.showModal();
-                    }}
-                  ></div>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="bg-black/50 hover:bg-black/70 rounded-full p-4 transition-colors cursor-pointer shadow-lg">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="white" stroke="white" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
-                        <polygon points="5 3 19 12 5 21 5 3"></polygon>
-                      </svg>
-                    </div>
+              {batchName && (
+                <div>
+                  <h3 className="font-semibold mb-2">Players in this batch:</h3>
+                  <div className="bg-neutral-50 p-3 rounded-md max-h-40 overflow-y-auto space-y-1">
+                    {batchPlayers.map((player) => (
+                      <div key={player.id} className="text-sm">
+                        • {player.name}
+                      </div>
+                    ))}
                   </div>
                 </div>
-                <CardContent className="p-3">
-                  <h4 className="font-bold">Advanced Batting Session</h4>
-                  <p className="text-sm text-neutral-600">Recorded on May 10, 2023</p>
-                  <div className="mt-1">
-                    <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
-                      Mixed Batch
-                    </span>
-                  </div>
-                </CardContent>
-              </Card>
+              )}
               
-              {/* Video Dialog */}
-              <dialog id="video-dialog-session" className="modal p-0 rounded-lg overflow-hidden max-w-4xl w-full">
-                <div className="relative">
-                  <div className="absolute top-2 right-2 z-10">
-                    <button 
-                      className="bg-black/50 hover:bg-black/70 rounded-full p-1"
-                      onClick={() => {
-                        const dialog = document.getElementById('video-dialog-session') as HTMLDialogElement;
-                        if (dialog) dialog.close();
-                      }}
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <line x1="18" y1="6" x2="6" y2="18"></line>
-                        <line x1="6" y1="6" x2="18" y2="18"></line>
-                      </svg>
-                    </button>
-                  </div>
-                  <video 
-                    src="/assets/Video 3.mp4"
-                    className="w-full max-h-[80vh]"
-                    controls
-                    autoPlay
+              {previewUrl && (
+                <div className="space-y-3">
+                  <Label htmlFor="title">Session Title</Label>
+                  <Input 
+                    id="title" 
+                    placeholder="Enter a title for this session"
+                    value={sessionTitle}
+                    onChange={(e) => setSessionTitle(e.target.value)}
                   />
-                  <div className="p-4 bg-white">
-                    <h3 className="font-bold text-lg">Advanced Batting Session</h3>
-                    <p className="text-neutral-600">Recorded on May 10, 2023</p>
-                  </div>
+                  <Button 
+                    className="w-full" 
+                    onClick={handleSaveRecording}
+                    disabled={!sessionTitle}
+                  >
+                    Save Recording
+                  </Button>
                 </div>
-              </dialog>
+              )}
             </div>
             
-            {/* Example Video 1 */}
-            <div className="flex-shrink-0 w-80">
-              <Card className="overflow-hidden h-full">
-                <div className="relative aspect-video bg-neutral-100">
-                  <div 
-                    className="w-full h-full bg-neutral-800 cursor-pointer"
-                    onClick={(e) => {
-                      const dialog = document.getElementById('video-dialog-1') as HTMLDialogElement;
-                      if (dialog) dialog.showModal();
-                    }}
-                  ></div>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="bg-black/50 hover:bg-black/70 rounded-full p-4 transition-colors cursor-pointer shadow-lg">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="white" stroke="white" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
-                        <polygon points="5 3 19 12 5 21 5 3"></polygon>
-                      </svg>
+            <div className="aspect-video bg-neutral-900 relative rounded-md overflow-hidden">
+              {!previewUrl ? (
+                <>
+                  {isRecording ? (
+                    <div className="absolute top-3 right-3 bg-red-500 text-white px-2 py-1 rounded flex items-center space-x-1">
+                      <span className="animate-ping absolute inline-flex h-3 w-3 rounded-full bg-red-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+                      <span className="ml-1 font-mono">{formatTime(recordingTime)}</span>
                     </div>
-                  </div>
-                </div>
-                <CardContent className="p-3">
-                  <h4 className="font-bold">Morning Batch Batting Practice</h4>
-                  <p className="text-sm text-neutral-600">Recorded on July 15, 2023</p>
-                  <div className="mt-1">
-                    <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
-                      Morning Batch
-                    </span>
-                  </div>
-                </CardContent>
-              </Card>
-              
-              {/* Video Dialog */}
-              <dialog id="video-dialog-1" className="modal p-0 rounded-lg overflow-hidden max-w-4xl w-full">
-                <div className="relative">
-                  <div className="absolute top-2 right-2 z-10">
-                    <button 
-                      className="bg-black/50 hover:bg-black/70 rounded-full p-1"
-                      onClick={() => {
-                        const dialog = document.getElementById('video-dialog-1') as HTMLDialogElement;
-                        if (dialog) dialog.close();
-                      }}
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <line x1="18" y1="6" x2="6" y2="18"></line>
-                        <line x1="6" y1="6" x2="18" y2="18"></line>
-                      </svg>
-                    </button>
-                  </div>
+                  ) : null}
                   <video 
-                    src="/assets/Video 1.mp4"
-                    className="w-full max-h-[80vh]"
-                    controls
-                    autoPlay
-                  />
-                  <div className="p-4 bg-white">
-                    <h3 className="font-bold text-lg">Morning Batch Batting Practice</h3>
-                    <p className="text-neutral-600">Recorded on July 15, 2023</p>
-                  </div>
-                </div>
-              </dialog>
-            </div>
-            
-            {/* Example Video 2 */}
-            <div className="flex-shrink-0 w-80">
-              <Card className="overflow-hidden h-full">
-                <div className="relative aspect-video bg-neutral-100">
-                  <div 
-                    className="w-full h-full bg-neutral-800 cursor-pointer"
-                    onClick={(e) => {
-                      const dialog = document.getElementById('video-dialog-2') as HTMLDialogElement;
-                      if (dialog) dialog.showModal();
-                    }}
-                  ></div>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="bg-black/50 hover:bg-black/70 rounded-full p-4 transition-colors cursor-pointer shadow-lg">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="white" stroke="white" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
-                        <polygon points="5 3 19 12 5 21 5 3"></polygon>
-                      </svg>
-                    </div>
-                  </div>
-                </div>
-                <CardContent className="p-3">
-                  <h4 className="font-bold">Evening Batch Bowling Drills</h4>
-                  <p className="text-sm text-neutral-600">Recorded on July 18, 2023</p>
-                  <div className="mt-1">
-                    <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
-                      Evening Batch
-                    </span>
-                  </div>
-                </CardContent>
-              </Card>
+                    ref={videoRef}
+                    autoPlay 
+                    muted
+                    className="w-full h-full object-cover"
+                  ></video>
+                </>
+              ) : (
+                <video 
+                  src={previewUrl}
+                  className="w-full h-full object-cover"
+                  controls
+                ></video>
+              )}
               
-              {/* Video Dialog */}
-              <dialog id="video-dialog-2" className="modal p-0 rounded-lg overflow-hidden max-w-4xl w-full">
-                <div className="relative">
-                  <div className="absolute top-2 right-2 z-10">
-                    <button 
-                      className="bg-black/50 hover:bg-black/70 rounded-full p-1"
-                      onClick={() => {
-                        const dialog = document.getElementById('video-dialog-2') as HTMLDialogElement;
-                        if (dialog) dialog.close();
-                      }}
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <line x1="18" y1="6" x2="6" y2="18"></line>
-                        <line x1="6" y1="6" x2="18" y2="18"></line>
-                      </svg>
-                    </button>
-                  </div>
-                  <video 
-                    src="/assets/Video 2.mp4"
-                    className="w-full max-h-[80vh]"
-                    controls
-                    autoPlay
-                  />
-                  <div className="p-4 bg-white">
-                    <h3 className="font-bold text-lg">Evening Batch Bowling Drills</h3>
-                    <p className="text-neutral-600">Recorded on July 18, 2023</p>
-                  </div>
+              {!isRecording && !previewUrl && (
+                <div className="absolute inset-0 flex flex-col items-center justify-center text-white">
+                  <div className="text-5xl mb-4">📹</div>
+                  <p className="text-lg mb-2">Ready to Record</p>
+                  <p className="text-sm opacity-70 max-w-md text-center">
+                    Select a batch and click Record to start capturing a training session
+                  </p>
                 </div>
-              </dialog>
-            </div>
-            
-            {/* Example Video 4 */}
-            <div className="flex-shrink-0 w-80">
-              <Card className="overflow-hidden h-full">
-                <div className="relative aspect-video bg-neutral-100">
-                  <div 
-                    className="w-full h-full bg-neutral-800 cursor-pointer"
-                    onClick={(e) => {
-                      const dialog = document.getElementById('video-dialog-4') as HTMLDialogElement;
-                      if (dialog) dialog.showModal();
-                    }}
-                  ></div>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="bg-black/50 hover:bg-black/70 rounded-full p-4 transition-colors cursor-pointer shadow-lg">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="white" stroke="white" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
-                        <polygon points="5 3 19 12 5 21 5 3"></polygon>
-                      </svg>
-                    </div>
-                  </div>
-                </div>
-                <CardContent className="p-3">
-                  <h4 className="font-bold">Advanced Bowling Techniques</h4>
-                  <p className="text-sm text-neutral-600">Recorded on July 22, 2023</p>
-                  <div className="mt-1">
-                    <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
-                      Morning Batch
-                    </span>
-                  </div>
-                </CardContent>
-              </Card>
-              
-              {/* Video Dialog */}
-              <dialog id="video-dialog-4" className="modal p-0 rounded-lg overflow-hidden max-w-4xl w-full">
-                <div className="relative">
-                  <div className="absolute top-2 right-2 z-10">
-                    <button 
-                      className="bg-black/50 hover:bg-black/70 rounded-full p-1"
-                      onClick={() => {
-                        const dialog = document.getElementById('video-dialog-4') as HTMLDialogElement;
-                        if (dialog) dialog.close();
-                      }}
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <line x1="18" y1="6" x2="6" y2="18"></line>
-                        <line x1="6" y1="6" x2="18" y2="18"></line>
-                      </svg>
-                    </button>
-                  </div>
-                  <video 
-                    src="/assets/Video 4.mp4"
-                    className="w-full max-h-[80vh]"
-                    controls
-                    autoPlay
-                  />
-                  <div className="p-4 bg-white">
-                    <h3 className="font-bold text-lg">Advanced Bowling Techniques</h3>
-                    <p className="text-neutral-600">Recorded on July 22, 2023</p>
-                  </div>
-                </div>
-              </dialog>
+              )}
             </div>
           </div>
           
-          {/* Carousel Navigation - Right */}
-          <button 
-            className="absolute right-0 top-1/2 transform -translate-y-1/2 z-10 bg-white/80 rounded-full p-2 shadow-md"
-            onClick={() => {
-              const container = document.getElementById('carousel-container');
-              if (container) {
-                container.scrollBy({ left: 300, behavior: 'smooth' });
-              }
-            }}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="m9 18 6-6-6-6"></path>
-            </svg>
-          </button>
+          <div className="flex justify-center pt-2">
+            {!isRecording && !previewUrl ? (
+              <Button 
+                onClick={startRecording} 
+                disabled={!batchName}
+                className="bg-red-600 hover:bg-red-700 px-8"
+              >
+                Start Recording
+              </Button>
+            ) : isRecording ? (
+              <Button 
+                variant="destructive" 
+                onClick={stopRecording}
+                className="px-8"
+              >
+                Stop Recording
+              </Button>
+            ) : (
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  if (previewUrl) {
+                    URL.revokeObjectURL(previewUrl);
+                  }
+                  setPreviewUrl(null);
+                  setRecordedChunks([]);
+                }}
+                className="px-8"
+              >
+                Discard & Record Again
+              </Button>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+      
+      {/* Session History */}
+      <div>
+        <h2 className="text-xl font-bold mb-4">Session History</h2>
+        
+        <div className="flex overflow-x-auto pb-4 space-x-4">
+          {/* Recent Session Video */}
+          <div className="flex-shrink-0 w-80">
+            <Card className="overflow-hidden h-full">
+              <div className="aspect-video">
+                <VideoPlayer 
+                  videoUrl="/assets/Video 3.mp4"
+                  title="Advanced Batting Session"
+                  className="w-full h-full"
+                />
+              </div>
+              <CardContent className="p-3">
+                <h4 className="font-bold">Advanced Batting Session</h4>
+                <p className="text-sm text-neutral-600">Recorded on May 10, 2023</p>
+                <div className="mt-1">
+                  <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
+                    Advanced Batch
+                  </span>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+          
+          {/* Example Video 1 */}
+          <div className="flex-shrink-0 w-80">
+            <Card className="overflow-hidden h-full">
+              <div className="aspect-video">
+                <VideoPlayer 
+                  videoUrl="/assets/Video 1.mp4"
+                  title="Morning Batch Batting Practice"
+                  className="w-full h-full"
+                />
+              </div>
+              <CardContent className="p-3">
+                <h4 className="font-bold">Morning Batch Batting Practice</h4>
+                <p className="text-sm text-neutral-600">Recorded on July 15, 2023</p>
+                <div className="mt-1">
+                  <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
+                    Morning Batch
+                  </span>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+          
+          {/* Example Video 2 */}
+          <div className="flex-shrink-0 w-80">
+            <Card className="overflow-hidden h-full">
+              <div className="aspect-video">
+                <VideoPlayer 
+                  videoUrl="/assets/Video 2.mp4"
+                  title="Footwork Drill Session"
+                  className="w-full h-full"
+                />
+              </div>
+              <CardContent className="p-3">
+                <h4 className="font-bold">Footwork Drill Session</h4>
+                <p className="text-sm text-neutral-600">Recorded on June 5, 2023</p>
+                <div className="mt-1">
+                  <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
+                    Intermediate Batch
+                  </span>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+          
+          {/* Example Video 4 */}
+          <div className="flex-shrink-0 w-80">
+            <Card className="overflow-hidden h-full">
+              <div className="aspect-video">
+                <VideoPlayer 
+                  videoUrl="/assets/Video 4.mp4"
+                  title="Bowling Technique Workshop"
+                  className="w-full h-full"
+                />
+              </div>
+              <CardContent className="p-3">
+                <h4 className="font-bold">Bowling Technique Workshop</h4>
+                <p className="text-sm text-neutral-600">Recorded on August 21, 2023</p>
+                <div className="mt-1">
+                  <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
+                    Advanced Batch
+                  </span>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     </div>
