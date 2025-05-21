@@ -8,6 +8,7 @@ import Header from "@/components/Header";
 import PlayerList from "@/pages/PlayerList";
 import PlayerProfile from "@/pages/PlayerProfile";
 import PerformanceAssessment from "@/pages/PerformanceAssessment";
+import VideoRecording from "@/pages/VideoRecording";
 
 function Router() {
   return (
