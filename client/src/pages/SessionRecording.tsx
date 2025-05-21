@@ -295,7 +295,7 @@ const SessionRecording = () => {
         
         <div className="flex overflow-x-auto pb-4 space-x-4">
           {/* Recent Session Video */}
-          <div className="flex-shrink-0 w-80">
+          <div className="flex-shrink-0 w-96">
             <Card className="overflow-hidden h-full">
               <div className="aspect-video">
                 <VideoPlayer 
@@ -317,7 +317,7 @@ const SessionRecording = () => {
           </div>
           
           {/* Example Video 1 */}
-          <div className="flex-shrink-0 w-80">
+          <div className="flex-shrink-0 w-96">
             <Card className="overflow-hidden h-full">
               <div className="aspect-video">
                 <VideoPlayer 
@@ -339,7 +339,7 @@ const SessionRecording = () => {
           </div>
           
           {/* Example Video 2 */}
-          <div className="flex-shrink-0 w-80">
+          <div className="flex-shrink-0 w-96">
             <Card className="overflow-hidden h-full">
               <div className="aspect-video">
                 <VideoPlayer 
@@ -361,7 +361,7 @@ const SessionRecording = () => {
           </div>
           
           {/* Example Video 4 */}
-          <div className="flex-shrink-0 w-80">
+          <div className="flex-shrink-0 w-96">
             <Card className="overflow-hidden h-full">
               <div className="aspect-video">
                 <VideoPlayer 
