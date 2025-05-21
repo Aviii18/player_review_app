@@ -332,6 +332,135 @@ const SessionRecording = () => {
           </CardContent>
         </Card>
       </div>
+      
+      {/* Video History Section */}
+      <div className="mt-8">
+        <h3 className="text-xl font-bold text-neutral-400 mb-4">Session Recording History</h3>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {/* Example Video 1 */}
+          <Card className="overflow-hidden">
+            <div className="relative aspect-video bg-neutral-100">
+              <video 
+                src="/assets/Video 1.mp4"
+                className="w-full h-full object-cover cursor-pointer"
+                poster="/assets/Video 1.mp4"
+                onClick={(e) => {
+                  const dialog = document.getElementById('video-dialog-1') as HTMLDialogElement;
+                  if (dialog) dialog.showModal();
+                }}
+              />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="bg-white/20 hover:bg-white/30 rounded-full p-3 transition-colors cursor-pointer">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                  </svg>
+                </div>
+              </div>
+            </div>
+            <CardContent className="p-3">
+              <h4 className="font-bold">Morning Batch Batting Practice</h4>
+              <p className="text-sm text-neutral-600">Recorded on July 15, 2023</p>
+              <div className="mt-1">
+                <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
+                  Morning Batch
+                </span>
+              </div>
+            </CardContent>
+            
+            {/* Video Dialog */}
+            <dialog id="video-dialog-1" className="modal p-0 rounded-lg overflow-hidden max-w-4xl w-full">
+              <div className="relative">
+                <div className="absolute top-2 right-2 z-10">
+                  <button 
+                    className="bg-black/50 hover:bg-black/70 rounded-full p-1"
+                    onClick={() => {
+                      const dialog = document.getElementById('video-dialog-1') as HTMLDialogElement;
+                      if (dialog) dialog.close();
+                    }}
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <line x1="18" y1="6" x2="6" y2="18"></line>
+                      <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                  </button>
+                </div>
+                <video 
+                  src="/assets/Video 1.mp4"
+                  className="w-full max-h-[80vh]"
+                  controls
+                  autoPlay
+                />
+                <div className="p-4 bg-white">
+                  <h3 className="font-bold text-lg">Morning Batch Batting Practice</h3>
+                  <p className="text-neutral-600">Recorded on July 15, 2023</p>
+                </div>
+              </div>
+            </dialog>
+          </Card>
+          
+          {/* Example Video 2 */}
+          <Card className="overflow-hidden">
+            <div className="relative aspect-video bg-neutral-100">
+              <video 
+                src="/assets/Video 2.mp4"
+                className="w-full h-full object-cover cursor-pointer"
+                poster="/assets/Video 2.mp4"
+                onClick={(e) => {
+                  const dialog = document.getElementById('video-dialog-2') as HTMLDialogElement;
+                  if (dialog) dialog.showModal();
+                }}
+              />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="bg-white/20 hover:bg-white/30 rounded-full p-3 transition-colors cursor-pointer">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                  </svg>
+                </div>
+              </div>
+            </div>
+            <CardContent className="p-3">
+              <h4 className="font-bold">Evening Batch Bowling Drills</h4>
+              <p className="text-sm text-neutral-600">Recorded on July 18, 2023</p>
+              <div className="mt-1">
+                <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
+                  Evening Batch
+                </span>
+              </div>
+            </CardContent>
+            
+            {/* Video Dialog */}
+            <dialog id="video-dialog-2" className="modal p-0 rounded-lg overflow-hidden max-w-4xl w-full">
+              <div className="relative">
+                <div className="absolute top-2 right-2 z-10">
+                  <button 
+                    className="bg-black/50 hover:bg-black/70 rounded-full p-1"
+                    onClick={() => {
+                      const dialog = document.getElementById('video-dialog-2') as HTMLDialogElement;
+                      if (dialog) dialog.close();
+                    }}
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <line x1="18" y1="6" x2="6" y2="18"></line>
+                      <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                  </button>
+                </div>
+                <video 
+                  src="/assets/Video 2.mp4"
+                  className="w-full max-h-[80vh]"
+                  controls
+                  autoPlay
+                />
+                <div className="p-4 bg-white">
+                  <h3 className="font-bold text-lg">Evening Batch Bowling Drills</h3>
+                  <p className="text-neutral-600">Recorded on July 18, 2023</p>
+                </div>
+              </div>
+            </dialog>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 };
