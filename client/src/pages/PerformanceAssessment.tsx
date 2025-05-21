@@ -75,6 +75,7 @@ const PerformanceAssessment = () => {
     { id: "head_stability", name: "Head Stability", rating: 0, notes: "" },
     { id: "bat_movement", name: "Bat Movement Line", rating: 0, notes: "" },
     { id: "foot_position", name: "Front & Back Foot Movement & Position", rating: 0, notes: "" },
+    { id: "weight_transfer", name: "Weight Transfer to Front Foot", rating: 0, notes: "" },
     { id: "elbow_shoulder", name: "Elbow Shoulder Alignment", rating: 0, notes: "" }
   ]);
 
