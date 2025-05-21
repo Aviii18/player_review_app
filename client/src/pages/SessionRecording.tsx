@@ -29,7 +29,7 @@ const SessionRecording = () => {
   });
   
   // Find all unique batch names
-  const batchOptions = players ? [...new Set(players.map(player => player.batch))].filter(Boolean) : [];
+  const batchOptions = players ? Array.from(new Set(players.map(player => player.batch || ''))).filter(Boolean) : [];
   
   // Filter players by selected batch
   const batchPlayers = players ? players.filter(player => player.batch === batchName) : [];
@@ -299,17 +299,17 @@ const SessionRecording = () => {
             <Card className="overflow-hidden h-full">
               <div className="aspect-video">
                 <VideoPlayer 
-                  videoUrl="/assets/Video 3.mp4"
-                  title="Advanced Batting Session"
+                  videoUrl="/assets/Session Video.mp4"
+                  title="Team Batting Practice"
                   className="w-full h-full"
                 />
               </div>
               <CardContent className="p-3">
-                <h4 className="font-bold">Advanced Batting Session</h4>
-                <p className="text-sm text-neutral-600">Recorded on May 10, 2023</p>
+                <h4 className="font-bold">Team Batting Practice</h4>
+                <p className="text-sm text-neutral-600">Recorded on May 20, 2023</p>
                 <div className="mt-1">
                   <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
-                    Advanced Batch
+                    Morning Batch
                   </span>
                 </div>
               </CardContent>
