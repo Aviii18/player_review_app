@@ -61,6 +61,7 @@ const PerformanceAssessment = () => {
   
   // Shot Specific Performance Areas
   const [selectedShotType, setSelectedShotType] = useState<string>("Cover Drive");
+  const [shotTypeNotes, setShotTypeNotes] = useState<string>("");
   
   interface ShotSpecificArea {
     id: string;
@@ -629,6 +630,17 @@ const PerformanceAssessment = () => {
                       <option value="Cut Shot">Cut Shot</option>
                       <option value="Sweep Shot">Sweep Shot</option>
                     </select>
+                  </div>
+                  
+                  <div className="mb-4">
+                    <Label htmlFor="shot-notes" className="block mb-2">Shot-Specific Notes</Label>
+                    <Textarea 
+                      id="shot-notes"
+                      className="w-full px-3 py-2 border border-neutral-200 rounded h-24"
+                      placeholder={`Enter overall notes about ${selectedShotType} technique...`}
+                      value={shotTypeNotes}
+                      onChange={(e) => setShotTypeNotes(e.target.value)}
+                    />
                   </div>
                   
                   <div className="space-y-4">
