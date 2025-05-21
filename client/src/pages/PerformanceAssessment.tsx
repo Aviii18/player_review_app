@@ -58,6 +58,25 @@ const PerformanceAssessment = () => {
     { type: "bat_connect", rating: 0, notes: "" },
     { type: "foot_movement", rating: 0, notes: "" }
   ]);
+  
+  // Shot Specific Performance Areas
+  const [selectedShotType, setSelectedShotType] = useState<string>("Cover Drive");
+  
+  interface ShotSpecificArea {
+    id: string;
+    name: string;
+    rating: number;
+    notes: string;
+  }
+  
+  const [shotSpecificAreas, setShotSpecificAreas] = useState<ShotSpecificArea[]>([
+    { id: "hands_grip", name: "Hands Grip", rating: 0, notes: "" },
+    { id: "top_hand_forearm", name: "Top Hand Forearm Push", rating: 0, notes: "" },
+    { id: "head_stability", name: "Head Stability", rating: 0, notes: "" },
+    { id: "bat_movement", name: "Bat Movement Line", rating: 0, notes: "" },
+    { id: "foot_position", name: "Front & Back Foot Movement & Position", rating: 0, notes: "" },
+    { id: "elbow_shoulder", name: "Elbow Shoulder Alignment", rating: 0, notes: "" }
+  ]);
 
   // Fetch videos with filters
   const { data: videos, isLoading: isVideosLoading } = useQuery<Video[]>({
@@ -589,6 +608,72 @@ const PerformanceAssessment = () => {
                       </svg>
                       <span>Add Performance Area</span>
                     </Button>
+                  </div>
+                </div>
+
+                {/* Shot Specific Performance Areas */}
+                <div className="mb-6">
+                  <h4 className="font-bold mb-3">Shot Specific Performance Areas</h4>
+                  
+                  <div className="mb-4">
+                    <Label htmlFor="shotType" className="block mb-2">Shot Type</Label>
+                    <select
+                      id="shotType"
+                      className="w-full px-3 py-2 border border-neutral-200 rounded"
+                      value={selectedShotType}
+                      onChange={(e) => setSelectedShotType(e.target.value)}
+                    >
+                      <option value="Cover Drive">Cover Drive</option>
+                      <option value="Straight Drive">Straight Drive</option>
+                      <option value="Pull Shot">Pull Shot</option>
+                      <option value="Cut Shot">Cut Shot</option>
+                      <option value="Sweep Shot">Sweep Shot</option>
+                    </select>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    {shotSpecificAreas.map((area, index) => (
+                      <div key={area.id} className="border border-neutral-200 rounded p-3">
+                        <div className="flex justify-between items-center mb-2">
+                          <div className="flex items-center space-x-2">
+                            <input
+                              type="checkbox"
+                              id={`focus-shot-${area.id}`}
+                              className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                              checked={focusAreas.includes(`shot-${area.id}`)}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setFocusAreas([...focusAreas, `shot-${area.id}`]);
+                                } else {
+                                  setFocusAreas(focusAreas.filter(a => a !== `shot-${area.id}`));
+                                }
+                              }}
+                            />
+                            <Label htmlFor={`focus-shot-${area.id}`} className="font-medium cursor-pointer">
+                              {area.name}
+                            </Label>
+                          </div>
+                          <StarRating 
+                            initialRating={area.rating}
+                            onChange={(rating) => {
+                              const updatedAreas = [...shotSpecificAreas];
+                              updatedAreas[index].rating = rating;
+                              setShotSpecificAreas(updatedAreas);
+                            }}
+                          />
+                        </div>
+                        <Textarea 
+                          className="w-full px-3 py-2 border border-neutral-200 rounded h-20 text-sm" 
+                          placeholder={`Add notes about ${area.name.toLowerCase()}...`}
+                          value={area.notes}
+                          onChange={(e) => {
+                            const updatedAreas = [...shotSpecificAreas];
+                            updatedAreas[index].notes = e.target.value;
+                            setShotSpecificAreas(updatedAreas);
+                          }}
+                        />
+                      </div>
+                    ))}
                   </div>
                 </div>
 
