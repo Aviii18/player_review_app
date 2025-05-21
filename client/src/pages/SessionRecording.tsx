@@ -364,19 +364,19 @@ const SessionRecording = () => {
             <div className="flex-shrink-0 w-80">
               <Card className="overflow-hidden h-full">
                 <div className="relative aspect-video bg-neutral-100">
-                  <video 
+                  <img 
                     src="/assets/Video 3.mp4"
+                    alt="Video thumbnail"
                     className="w-full h-full object-cover cursor-pointer"
-                    poster="/assets/Video 3.mp4"
                     onClick={(e) => {
                       const dialog = document.getElementById('video-dialog-session') as HTMLDialogElement;
                       if (dialog) dialog.showModal();
                     }}
                   />
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="bg-white/20 hover:bg-white/30 rounded-full p-3 transition-colors cursor-pointer">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <polygon points="5 3 19 12 5 21 5 3" fill="white"></polygon>
+                    <div className="bg-black/50 hover:bg-black/70 rounded-full p-4 transition-colors cursor-pointer shadow-lg">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="white" stroke="white" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
+                        <polygon points="5 3 19 12 5 21 5 3"></polygon>
                       </svg>
                     </div>
                   </div>
@@ -427,19 +427,19 @@ const SessionRecording = () => {
             <div className="flex-shrink-0 w-80">
               <Card className="overflow-hidden h-full">
                 <div className="relative aspect-video bg-neutral-100">
-                  <video 
+                  <img 
                     src="/assets/Video 1.mp4"
+                    alt="Video thumbnail"
                     className="w-full h-full object-cover cursor-pointer"
-                    poster="/assets/Video 1.mp4"
                     onClick={(e) => {
                       const dialog = document.getElementById('video-dialog-1') as HTMLDialogElement;
                       if (dialog) dialog.showModal();
                     }}
                   />
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="bg-white/20 hover:bg-white/30 rounded-full p-3 transition-colors cursor-pointer">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <polygon points="5 3 19 12 5 21 5 3" fill="white"></polygon>
+                    <div className="bg-black/50 hover:bg-black/70 rounded-full p-4 transition-colors cursor-pointer shadow-lg">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="white" stroke="white" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
+                        <polygon points="5 3 19 12 5 21 5 3"></polygon>
                       </svg>
                     </div>
                   </div>
@@ -490,19 +490,19 @@ const SessionRecording = () => {
             <div className="flex-shrink-0 w-80">
               <Card className="overflow-hidden h-full">
                 <div className="relative aspect-video bg-neutral-100">
-                  <video 
+                  <img 
                     src="/assets/Video 2.mp4"
+                    alt="Video thumbnail"
                     className="w-full h-full object-cover cursor-pointer"
-                    poster="/assets/Video 2.mp4"
                     onClick={(e) => {
                       const dialog = document.getElementById('video-dialog-2') as HTMLDialogElement;
                       if (dialog) dialog.showModal();
                     }}
                   />
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="bg-white/20 hover:bg-white/30 rounded-full p-3 transition-colors cursor-pointer">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <polygon points="5 3 19 12 5 21 5 3" fill="white"></polygon>
+                    <div className="bg-black/50 hover:bg-black/70 rounded-full p-4 transition-colors cursor-pointer shadow-lg">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="white" stroke="white" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
+                        <polygon points="5 3 19 12 5 21 5 3"></polygon>
                       </svg>
                     </div>
                   </div>
@@ -553,19 +553,19 @@ const SessionRecording = () => {
             <div className="flex-shrink-0 w-80">
               <Card className="overflow-hidden h-full">
                 <div className="relative aspect-video bg-neutral-100">
-                  <video 
+                  <img 
                     src="/assets/Video 4.mp4"
+                    alt="Video thumbnail"
                     className="w-full h-full object-cover cursor-pointer"
-                    poster="/assets/Video 4.mp4"
                     onClick={(e) => {
                       const dialog = document.getElementById('video-dialog-4') as HTMLDialogElement;
                       if (dialog) dialog.showModal();
                     }}
                   />
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="bg-white/20 hover:bg-white/30 rounded-full p-3 transition-colors cursor-pointer">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <polygon points="5 3 19 12 5 21 5 3" fill="white"></polygon>
+                    <div className="bg-black/50 hover:bg-black/70 rounded-full p-4 transition-colors cursor-pointer shadow-lg">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="white" stroke="white" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
+                        <polygon points="5 3 19 12 5 21 5 3"></polygon>
                       </svg>
                     </div>
                   </div>
