@@ -542,7 +542,24 @@ const PerformanceAssessment = () => {
                   {problemAreas.map((area, index) => (
                     <div key={index} className="border border-neutral-200 rounded p-3 mb-3">
                       <div className="flex justify-between items-center mb-2">
-                        <Label className="font-medium">{getProblemAreaName(area.type)}</Label>
+                        <div className="flex items-center space-x-2">
+                          <input
+                            type="checkbox"
+                            id={`focus-${area.type}`}
+                            className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                            checked={focusAreas.includes(area.type)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setFocusAreas([...focusAreas, area.type]);
+                              } else {
+                                setFocusAreas(focusAreas.filter(a => a !== area.type));
+                              }
+                            }}
+                          />
+                          <Label htmlFor={`focus-${area.type}`} className="font-medium cursor-pointer">
+                            {getProblemAreaName(area.type)}
+                          </Label>
+                        </div>
                         <StarRating 
                           initialRating={area.rating}
                           onChange={(rating) => handleProblemAreaChange(index, 'rating', rating)}
@@ -557,7 +574,7 @@ const PerformanceAssessment = () => {
                     </div>
                   ))}
 
-                  {/* Add Problem Area */}
+                  {/* Add Performance Area */}
                   <div className="mt-3">
                     <Button 
                       type="button" 
@@ -570,7 +587,7 @@ const PerformanceAssessment = () => {
                         <path d="M12 8v8"></path>
                         <path d="M8 12h8"></path>
                       </svg>
-                      <span>Add Problem Area</span>
+                      <span>Add Performance Area</span>
                     </Button>
                   </div>
                 </div>
