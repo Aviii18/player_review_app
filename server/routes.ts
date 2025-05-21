@@ -242,6 +242,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         playerId,
         title,
         url: videoUrl,
+        recordedDate: new Date(),
         shotType,
         ballSpeed,
         batConnect

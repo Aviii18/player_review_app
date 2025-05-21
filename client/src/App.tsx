@@ -16,6 +16,7 @@ function Router() {
       <Route path="/" component={PlayerList} />
       <Route path="/players/:id" component={PlayerProfile} />
       <Route path="/players/:id/assessment" component={PerformanceAssessment} />
+      <Route path="/players/:id/record" component={VideoRecording} />
       <Route component={NotFound} />
     </Switch>
   );

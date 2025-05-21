@@ -329,8 +329,19 @@ const PlayerProfile = () => {
           })
       )}
 
-      {/* Video Library Section */}
-      <h3 className="text-xl font-bold text-neutral-400 mb-4 mt-8">Video Library</h3>
+      {/* Video Library Section with Actions */}
+      <div className="flex justify-between items-center mt-8 mb-4">
+        <h3 className="text-xl font-bold text-neutral-400">Video Library</h3>
+        <Link href={`/players/${playerId}/record`}>
+          <Button className="bg-primary hover:bg-primary-dark">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1">
+              <circle cx="12" cy="12" r="10"></circle>
+              <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+            Record New Video
+          </Button>
+        </Link>
+      </div>
       
       {/* Week 1 */}
       <Card className="mb-6">
