@@ -26,6 +26,23 @@ const PerformanceAssessment = () => {
   const playerId = params.id ? parseInt(params.id) : 0;
   const [_, navigate] = useLocation();
   const { toast } = useToast();
+  
+  // State for video attribute tagging
+  const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
+  const [isTaggingMode, setIsTaggingMode] = useState(false);
+  const [videoTags, setVideoTags] = useState<{
+    shotType: string;
+    ballLength: string;
+    ballSpeed: string;
+    batConnect: string;
+    notes: string;
+  }>({
+    shotType: '',
+    ballLength: '',
+    ballSpeed: '',
+    batConnect: '',
+    notes: ''
+  });
 
   const { data: player, isLoading: isPlayerLoading } = useQuery<Player>({
     queryKey: [`/api/players/${playerId}`],
@@ -144,6 +161,40 @@ const PerformanceAssessment = () => {
     return nameMap[type] || type;
   };
 
+  // Video tagging functions
+  const handleVideoSelect = (video: Video) => {
+    setSelectedVideo(video);
+    // Initialize tags with video's existing values
+    setVideoTags({
+      shotType: video.shotType || '',
+      ballLength: video.ballLength || 'Full',
+      ballSpeed: video.ballSpeed || 'Medium',
+      batConnect: video.batConnect || 'Middle',
+      notes: ''
+    });
+    setIsTaggingMode(true);
+  };
+  
+  const handleTagChange = (field: keyof typeof videoTags, value: string) => {
+    setVideoTags({
+      ...videoTags,
+      [field]: value
+    });
+  };
+  
+  const handleSaveTags = () => {
+    if (!selectedVideo) return;
+    
+    // In a real implementation, this would save the tags to the backend
+    // Here we just update the UI and show a toast
+    toast({
+      title: "Shot Tagged",
+      description: `Tagged ${selectedVideo.title} with ${videoTags.shotType}, ${videoTags.ballLength} length, ${videoTags.ballSpeed} speed`,
+    });
+    
+    setIsTaggingMode(false);
+  };
+
   const isLoading = isPlayerLoading || isVideosLoading;
   const isPending = createAssessment.isPending;
 
@@ -166,6 +217,103 @@ const PerformanceAssessment = () => {
 
   return (
     <div className="container mx-auto px-4 py-6">
+      {isTaggingMode && selectedVideo && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg max-w-2xl w-full p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xl font-bold">Tag Video: {selectedVideo.title}</h3>
+              <Button variant="ghost" size="sm" onClick={() => setIsTaggingMode(false)}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </Button>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div>
+                <Label htmlFor="shotType">Shot Type</Label>
+                <Select value={videoTags.shotType} onValueChange={(value) => handleTagChange('shotType', value)}>
+                  <SelectTrigger id="shotType">
+                    <SelectValue placeholder="Select Shot Type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Cover Drive">Cover Drive</SelectItem>
+                    <SelectItem value="Straight Drive">Straight Drive</SelectItem>
+                    <SelectItem value="Pull Shot">Pull Shot</SelectItem>
+                    <SelectItem value="Cut Shot">Cut Shot</SelectItem>
+                    <SelectItem value="Defensive Block">Defensive Block</SelectItem>
+                    <SelectItem value="Sweep">Sweep</SelectItem>
+                    <SelectItem value="Flick">Flick</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div>
+                <Label htmlFor="ballLength">Ball Length</Label>
+                <Select value={videoTags.ballLength} onValueChange={(value) => handleTagChange('ballLength', value)}>
+                  <SelectTrigger id="ballLength">
+                    <SelectValue placeholder="Select Ball Length" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Full">Full</SelectItem>
+                    <SelectItem value="Good">Good</SelectItem>
+                    <SelectItem value="Short">Short</SelectItem>
+                    <SelectItem value="Yorker">Yorker</SelectItem>
+                    <SelectItem value="Half-volley">Half-volley</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div>
+                <Label htmlFor="ballSpeed">Ball Speed</Label>
+                <Select value={videoTags.ballSpeed} onValueChange={(value) => handleTagChange('ballSpeed', value)}>
+                  <SelectTrigger id="ballSpeed">
+                    <SelectValue placeholder="Select Ball Speed" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Fast">Fast (80+ km/h)</SelectItem>
+                    <SelectItem value="Medium">Medium (60-80 km/h)</SelectItem>
+                    <SelectItem value="Slow">Slow (&lt; 60 km/h)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div>
+                <Label htmlFor="batConnect">Bat Connect</Label>
+                <Select value={videoTags.batConnect} onValueChange={(value) => handleTagChange('batConnect', value)}>
+                  <SelectTrigger id="batConnect">
+                    <SelectValue placeholder="Select Bat Connect" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Middle">Middle</SelectItem>
+                    <SelectItem value="Edge">Edge</SelectItem>
+                    <SelectItem value="Bottom">Bottom</SelectItem>
+                    <SelectItem value="Missed">Missed</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            
+            <div className="mb-4">
+              <Label htmlFor="notes">Notes</Label>
+              <Textarea 
+                id="notes" 
+                placeholder="Add any additional notes about this shot"
+                value={videoTags.notes}
+                onChange={(e) => handleTagChange('notes', e.target.value)}
+                className="min-h-[80px]"
+              />
+            </div>
+            
+            <div className="flex justify-end space-x-2">
+              <Button variant="outline" onClick={() => setIsTaggingMode(false)}>Cancel</Button>
+              <Button onClick={handleSaveTags}>Save Tags</Button>
+            </div>
+          </div>
+        </div>
+      )}
+      
       <div className="flex items-center mb-6">
         <Link href={`/players/${playerId}`}>
           <Button variant="ghost" className="mr-2 p-2 rounded-full hover:bg-neutral-200">
@@ -307,12 +455,29 @@ const PerformanceAssessment = () => {
                         return (
                           <div key={index} className="flex-shrink-0 w-64">
                             <div className="h-36 w-full relative">
-                              <VideoPlayer
-                                videoUrl={video.url}
-                                title={video.title}
-                                className="w-full h-full object-cover rounded"
-                                triggerClassName="w-full h-full flex items-center justify-center bg-neutral-200 rounded"
-                              />
+                              <div className="relative w-full h-full">
+                                <VideoPlayer
+                                  videoUrl={video.url}
+                                  title={video.title}
+                                  className="w-full h-full object-cover rounded"
+                                  triggerClassName="w-full h-full flex items-center justify-center bg-neutral-200 rounded"
+                                />
+                                <Button 
+                                  size="sm"
+                                  className="absolute top-2 right-2 bg-primary/80 hover:bg-primary text-white p-1 rounded"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleVideoSelect(video);
+                                    setIsTaggingMode(true);
+                                  }}
+                                  title="Tag attributes in this video"
+                                >
+                                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
+                                    <line x1="7" y1="7" x2="7.01" y2="7"></line>
+                                  </svg>
+                                </Button>
+                              </div>
                             </div>
                             <div className="mt-2">
                               <p className="font-bold text-sm">{video.shotType}</p>
