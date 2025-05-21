@@ -541,9 +541,9 @@ const PerformanceAssessment = () => {
             </CardHeader>
             <CardContent className="p-4">
               <form onSubmit={(e) => { e.preventDefault(); handleSaveAssessment(); }}>
-                {/* Overall Notes */}
-                <div className="mb-4">
-                  <Label className="block font-bold mb-2">Session Notes</Label>
+                {/* Session Notes */}
+                <div className="mb-6 border-2 border-primary/10 rounded-lg p-4 bg-primary/5">
+                  <h3 className="text-lg font-bold mb-3 text-primary">Session Notes</h3>
                   <Textarea 
                     className="w-full px-3 py-2 border border-neutral-200 rounded h-32" 
                     placeholder="Enter overall notes for this assessment session..."
@@ -553,10 +553,9 @@ const PerformanceAssessment = () => {
                 </div>
 
 
-
                 {/* General Performance Areas */}
-                <div className="mb-6">
-                  <h4 className="font-bold mb-3">General Performance Areas</h4>
+                <div className="mb-6 border-2 border-secondary/10 rounded-lg p-4 bg-secondary/5">
+                  <h3 className="text-lg font-bold mb-3 text-secondary">General Performance Areas</h3>
 
                   {problemAreas.map((area, index) => (
                     <div key={index} className="border border-neutral-200 rounded p-3 mb-3">
@@ -612,8 +611,8 @@ const PerformanceAssessment = () => {
                 </div>
 
                 {/* Shot Specific Performance Areas */}
-                <div className="mb-6">
-                  <h4 className="font-bold mb-3">Shot Specific Performance Areas</h4>
+                <div className="mb-6 border-2 border-amber-500/20 rounded-lg p-4 bg-amber-500/5">
+                  <h3 className="text-lg font-bold mb-3 text-amber-600">Shot Specific Performance Areas</h3>
                   
                   <div className="mb-4">
                     <Label htmlFor="shotType" className="block mb-2">Shot Type</Label>
