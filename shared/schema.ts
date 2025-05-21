@@ -56,6 +56,7 @@ export const videos = pgTable("videos", {
   url: text("url").notNull(),
   recordedDate: timestamp("recorded_date").notNull(),
   shotType: text("shot_type"), // "cover_drive", "straight_drive", "pull_shot" etc.
+  ballLength: text("ball_length"), // "full", "good", "short", "yorker", "half-volley"
   ballSpeed: text("ball_speed"), // "fast", "medium", "slow"
   batConnect: text("bat_connect"), // "middle", "edge", "bottom", "missed"
 });

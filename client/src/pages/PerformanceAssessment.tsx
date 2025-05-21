@@ -167,7 +167,7 @@ const PerformanceAssessment = () => {
     // Initialize tags with video's existing values
     setVideoTags({
       shotType: video.shotType || '',
-      ballLength: video.ballLength || 'Full',
+      ballLength: 'Full', // New property not in Video type
       ballSpeed: video.ballSpeed || 'Medium',
       batConnect: video.batConnect || 'Middle',
       notes: ''
