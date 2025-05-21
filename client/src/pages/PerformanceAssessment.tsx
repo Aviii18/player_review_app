@@ -533,39 +533,11 @@ const PerformanceAssessment = () => {
                   />
                 </div>
 
-                {/* Focus Areas */}
-                <div className="mb-4">
-                  <Label className="block font-bold mb-2">Current Focus Areas</Label>
-                  <div className="grid grid-cols-2 gap-2">
-                    {["Reaction time", "Bat connect", "Shot selection accuracy", "Footwork"].map((area) => (
-                      <div key={area} className="flex items-center space-x-2">
-                        <input
-                          type="checkbox"
-                          id={area.replace(/\s+/g, '-').toLowerCase()}
-                          checked={focusAreas.includes(area)}
-                          onChange={(e) => {
-                            if (e.target.checked) {
-                              setFocusAreas([...focusAreas, area]);
-                            } else {
-                              setFocusAreas(focusAreas.filter(a => a !== area));
-                            }
-                          }}
-                          className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
-                        />
-                        <label
-                          htmlFor={area.replace(/\s+/g, '-').toLowerCase()}
-                          className="text-sm font-medium text-gray-700"
-                        >
-                          {area}
-                        </label>
-                      </div>
-                    ))}
-                  </div>
-                </div>
 
-                {/* Problem Areas */}
+
+                {/* General Performance Areas */}
                 <div className="mb-6">
-                  <h4 className="font-bold mb-3">Problem Areas</h4>
+                  <h4 className="font-bold mb-3">General Performance Areas</h4>
 
                   {problemAreas.map((area, index) => (
                     <div key={index} className="border border-neutral-200 rounded p-3 mb-3">
