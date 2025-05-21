@@ -29,6 +29,15 @@ const Header = () => {
                 <span className="hidden md:inline">Players</span>
               </Link>
             </li>
+            <li className={location.startsWith("/record") ? "border-b-2 border-secondary py-2" : "py-2"}>
+              <Link href="/record" className="flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-video mr-1">
+                  <path d="M19.2 5H4.8a2.8 2.8 0 0 0-2.8 2.8v8.4a2.8 2.8 0 0 0 2.8 2.8h14.4a2.8 2.8 0 0 0 2.8-2.8V7.8A2.8 2.8 0 0 0 19.2 5Z"></path>
+                  <path d="M19 11 22 9v6l-3-2"></path>
+                </svg>
+                <span className="hidden md:inline">Record Session</span>
+              </Link>
+            </li>
             <li className="py-2">
               <a href="#" className="flex items-center">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-calendar mr-1">

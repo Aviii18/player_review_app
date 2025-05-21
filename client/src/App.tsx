@@ -9,6 +9,7 @@ import PlayerList from "@/pages/PlayerList";
 import PlayerProfile from "@/pages/PlayerProfile";
 import PerformanceAssessment from "@/pages/PerformanceAssessment";
 import VideoRecording from "@/pages/VideoRecording";
+import SessionRecording from "@/pages/SessionRecording";
 
 function Router() {
   return (
@@ -17,6 +18,7 @@ function Router() {
       <Route path="/players/:id" component={PlayerProfile} />
       <Route path="/players/:id/assessment" component={PerformanceAssessment} />
       <Route path="/players/:id/record" component={VideoRecording} />
+      <Route path="/record" component={SessionRecording} />
       <Route component={NotFound} />
     </Switch>
   );
