@@ -133,7 +133,7 @@ const PerformanceAssessment = () => {
 
   const addProblemArea = () => {
     // Add a new problem area with default values
-    const problemAreaTypes = ["bat_connect", "foot_movement", "bat_swing", "weight_shifting"];
+    const problemAreaTypes = ["bat_connect", "foot_movement", "bat_swing", "reaction_time"];
     const existingTypes = problemAreas.map(pa => pa.type);
     const availableTypes = problemAreaTypes.filter(type => !existingTypes.includes(type));
     
@@ -156,7 +156,7 @@ const PerformanceAssessment = () => {
       bat_connect: "Bat Connect",
       foot_movement: "Foot Movement",
       bat_swing: "Bat Swing",
-      weight_shifting: "Weight Shifting"
+      reaction_time: "Reaction Time"
     };
     return nameMap[type] || type;
   };
