@@ -70,7 +70,13 @@ const PerformanceAssessment = () => {
     notes: string;
   }
   
-  const [shotSpecificAreas, setShotSpecificAreas] = useState<ShotSpecificArea[]>([
+  interface ShotTypeAssessment {
+    shotType: string;
+    notes: string;
+    areas: ShotSpecificArea[];
+  }
+  
+  const defaultAreas = [
     { id: "hands_grip", name: "Hands Grip", rating: 0, notes: "" },
     { id: "top_hand_forearm", name: "Top Hand Forearm Push", rating: 0, notes: "" },
     { id: "head_stability", name: "Head Stability", rating: 0, notes: "" },
@@ -78,7 +84,27 @@ const PerformanceAssessment = () => {
     { id: "foot_position", name: "Front & Back Foot Movement & Position", rating: 0, notes: "" },
     { id: "weight_transfer", name: "Weight Transfer to Front Foot", rating: 0, notes: "" },
     { id: "elbow_shoulder", name: "Elbow Shoulder Alignment", rating: 0, notes: "" }
-  ]);
+  ];
+  
+  const [shotSpecificAreas, setShotSpecificAreas] = useState<ShotSpecificArea[]>([...defaultAreas]);
+  
+  const [savedShotAssessments, setSavedShotAssessments] = useState<ShotTypeAssessment[]>([]);
+  
+  const addShotTypeAssessment = () => {
+    // Save current shot assessment
+    const newShotAssessment: ShotTypeAssessment = {
+      shotType: selectedShotType,
+      notes: shotTypeNotes,
+      areas: [...shotSpecificAreas]
+    };
+    
+    setSavedShotAssessments([...savedShotAssessments, newShotAssessment]);
+    
+    // Reset form for next shot type
+    setSelectedShotType("Cover Drive");
+    setShotTypeNotes("");
+    setShotSpecificAreas([...defaultAreas]);
+  };
 
   // Fetch videos with filters
   const { data: videos, isLoading: isVideosLoading } = useQuery<Video[]>({
@@ -595,6 +621,38 @@ const PerformanceAssessment = () => {
                 <div className="mb-6 border-2 border-amber-500/20 rounded-lg p-4 bg-amber-500/5">
                   <h3 className="text-lg font-bold mb-3 text-amber-600">Shot Specific Performance Areas</h3>
                   
+                  {/* Saved Shot Type Assessments */}
+                  {savedShotAssessments.length > 0 && (
+                    <div className="mb-6">
+                      <h4 className="font-medium mb-3">Saved Shot Assessments</h4>
+                      <div className="space-y-2">
+                        {savedShotAssessments.map((assessment, idx) => (
+                          <div key={idx} className="border border-neutral-300 rounded p-3 bg-neutral-50">
+                            <div className="flex justify-between items-center">
+                              <h5 className="font-medium text-primary">{assessment.shotType}</h5>
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                className="text-xs"
+                                onClick={() => {
+                                  // Remove this assessment from saved list
+                                  setSavedShotAssessments(savedShotAssessments.filter((_, i) => i !== idx));
+                                }}
+                              >
+                                Remove
+                              </Button>
+                            </div>
+                            {assessment.notes && (
+                              <p className="text-sm text-gray-600 mt-1 italic">"{assessment.notes}"</p>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                      <div className="border-b border-dashed border-gray-300 my-4"></div>
+                    </div>
+                  )}
+                  
+                  {/* Current Shot Type Assessment Form */}
                   <div className="mb-4">
                     <Label htmlFor="shotType" className="block mb-2">Shot Type</Label>
                     <select
@@ -640,6 +698,22 @@ const PerformanceAssessment = () => {
                         </div>
                       </div>
                     ))}
+                  </div>
+                  
+                  <div className="mt-4">
+                    <Button 
+                      type="button"
+                      variant="secondary"
+                      className="w-full"
+                      onClick={addShotTypeAssessment}
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="mr-1" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <path d="M12 8v8"></path>
+                        <path d="M8 12h8"></path>
+                      </svg>
+                      Add Another Shot Type Assessment
+                    </Button>
                   </div>
                 </div>
 
