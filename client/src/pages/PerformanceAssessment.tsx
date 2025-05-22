@@ -217,7 +217,7 @@ const PerformanceAssessment = () => {
       ballLength: 'Full', // New property not in Video type
       ballSpeed: video.ballSpeed || 'Medium',
       batConnect: video.batConnect || 'Middle',
-      notes: ''
+      footwork: 'Good'
     });
     setIsTaggingMode(true);
   };
@@ -236,7 +236,7 @@ const PerformanceAssessment = () => {
     // Here we just update the UI and show a toast
     toast({
       title: "Shot Tagged",
-      description: `Tagged ${selectedVideo.title} with ${videoTags.shotType}, ${videoTags.ballLength} length, ${videoTags.ballSpeed} speed`,
+      description: `Tagged ${selectedVideo.title} with ${videoTags.shotType}, ${videoTags.ballLength} length, ${videoTags.ballSpeed} speed, ${videoTags.footwork} footwork`,
     });
     
     setIsTaggingMode(false);
@@ -343,14 +343,17 @@ const PerformanceAssessment = () => {
             </div>
             
             <div className="mb-4">
-              <Label htmlFor="notes">Notes</Label>
-              <Textarea 
-                id="notes" 
-                placeholder="Add any additional notes about this shot"
-                value={videoTags.notes}
-                onChange={(e) => handleTagChange('notes', e.target.value)}
-                className="min-h-[80px]"
-              />
+              <Label htmlFor="footwork">Footwork</Label>
+              <Select value={videoTags.footwork} onValueChange={(value) => handleTagChange('footwork', value)}>
+                <SelectTrigger id="footwork">
+                  <SelectValue placeholder="Select Footwork Quality" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Good">Good</SelectItem>
+                  <SelectItem value="Average">Average</SelectItem>
+                  <SelectItem value="Poor">Poor</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             
             <div className="flex justify-end space-x-2">
