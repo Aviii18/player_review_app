@@ -170,10 +170,17 @@ const AssessmentHistoryCard = ({ assessment }: { assessment: PerformanceAssessme
                           <div key={areaIndex} className="border border-neutral-200 rounded p-3">
                             <div className="flex justify-between items-center">
                               <span className="font-medium">{area.name}</span>
-                              <StarRating 
-                                initialRating={area.rating}
-                                readOnly={true}
-                              />
+                              <div>
+                                {area.rating === 1 ? (
+                                  <span className="px-3 py-1 rounded text-sm font-medium bg-red-500 text-white">
+                                    Needs Work
+                                  </span>
+                                ) : (
+                                  <span className="px-3 py-1 rounded text-sm font-medium bg-green-500 text-white">
+                                    Good
+                                  </span>
+                                )}
+                              </div>
                             </div>
                             {area.notes && (
                               <p className="mt-2 text-xs text-neutral-600">{area.notes}</p>

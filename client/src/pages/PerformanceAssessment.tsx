@@ -753,14 +753,19 @@ const PerformanceAssessment = () => {
                           <Label className="font-medium">
                             {area.name}
                           </Label>
-                          <StarRating 
-                            initialRating={area.rating}
-                            onChange={(rating) => {
-                              const updatedAreas = [...shotSpecificAreas];
-                              updatedAreas[index].rating = rating;
-                              setShotSpecificAreas(updatedAreas);
-                            }}
-                          />
+                          <div className="flex space-x-2">
+                            <button
+                              type="button"
+                              className={`px-3 py-1 rounded text-sm font-medium ${area.rating === 1 ? 'bg-red-500 text-white' : 'bg-gray-200 text-gray-700'}`}
+                              onClick={() => {
+                                const updatedAreas = [...shotSpecificAreas];
+                                updatedAreas[index].rating = area.rating === 1 ? 0 : 1;
+                                setShotSpecificAreas(updatedAreas);
+                              }}
+                            >
+                              Needs Work
+                            </button>
+                          </div>
                         </div>
                       </div>
                     ))}
