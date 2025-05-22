@@ -309,12 +309,8 @@ const PlayerProfile = () => {
                           
                         return (
                           <div key={metric.id} className="border border-neutral-200 rounded p-4">
-                            <div className="flex justify-between items-center mb-2">
+                            <div className="mb-2">
                               <h5 className="font-bold">{metricDisplayName}</h5>
-                              <VideoPlayer 
-                                videoUrl={metric.videoUrl || ""}
-                                title={`${metricDisplayName} Assessment - ${format(new Date(assessment.weekEnd), "MMMM d, yyyy")}`}
-                              />
                             </div>
                             <div className="mb-1 flex justify-between text-sm">
                               <span>Performance</span>
