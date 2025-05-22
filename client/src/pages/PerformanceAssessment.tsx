@@ -63,6 +63,7 @@ const PerformanceAssessment = () => {
   // Shot Specific Performance Areas
   const [selectedShotType, setSelectedShotType] = useState<string>("Cover Drive");
   const [shotTypeNotes, setShotTypeNotes] = useState<string>("");
+  const [shotTypeRating, setShotTypeRating] = useState<number>(0);
   
   interface ShotSpecificArea {
     id: string;
@@ -74,6 +75,7 @@ const PerformanceAssessment = () => {
   interface ShotTypeAssessment {
     shotType: string;
     notes: string;
+    rating: number;
     areas: ShotSpecificArea[];
   }
   
@@ -96,6 +98,7 @@ const PerformanceAssessment = () => {
     const newShotAssessment: ShotTypeAssessment = {
       shotType: selectedShotType,
       notes: shotTypeNotes,
+      rating: shotTypeRating,
       areas: [...shotSpecificAreas]
     };
     
@@ -104,6 +107,7 @@ const PerformanceAssessment = () => {
     // Reset form for next shot type
     setSelectedShotType("Cover Drive");
     setShotTypeNotes("");
+    setShotTypeRating(0);
     setShotSpecificAreas([...defaultAreas]);
   };
 
@@ -152,7 +156,7 @@ const PerformanceAssessment = () => {
         // Save the overall shot type assessment
         await apiRequest('POST', `/api/assessments/${assessment.id}/metrics`, {
           metricType: shotAssessment.shotType.toLowerCase().replace(' ', '_'),
-          rating: 0, // We'll calculate this from the areas' average
+          rating: shotAssessment.rating, // Use the overall shot type rating
           value: shotAssessment.areas.filter(a => a.rating > 0).length + ' areas evaluated',
           notes: shotAssessment.notes,
           videoUrl: videos && videos.length > 0 ? videos[0].url : ''
@@ -704,7 +708,16 @@ const PerformanceAssessment = () => {
                   
                   {/* Current Shot Type Assessment Form */}
                   <div className="mb-4">
-                    <Label htmlFor="shotType" className="block mb-2">Shot Type</Label>
+                    <div className="flex justify-between items-center mb-2">
+                      <Label htmlFor="shotType" className="block">Shot Type</Label>
+                      <div className="flex items-center">
+                        <Label className="mr-2 text-sm">Overall Rating:</Label>
+                        <StarRating 
+                          initialRating={shotTypeRating}
+                          onChange={(rating) => setShotTypeRating(rating)}
+                        />
+                      </div>
+                    </div>
                     <select
                       id="shotType"
                       className="w-full px-3 py-2 border border-neutral-200 rounded"
