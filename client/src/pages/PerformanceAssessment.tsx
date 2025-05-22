@@ -147,6 +147,31 @@ const PerformanceAssessment = () => {
         });
       }
       
+      // Save shot-specific assessments as metrics
+      for (const shotAssessment of savedShotAssessments) {
+        // Save the overall shot type assessment
+        await apiRequest('POST', `/api/assessments/${assessment.id}/metrics`, {
+          metricType: shotAssessment.shotType.toLowerCase().replace(' ', '_'),
+          rating: 0, // We'll calculate this from the areas' average
+          value: shotAssessment.areas.filter(a => a.rating > 0).length + ' areas evaluated',
+          notes: shotAssessment.notes,
+          videoUrl: videos && videos.length > 0 ? videos[0].url : ''
+        });
+        
+        // Save each specific technical area within the shot
+        for (const area of shotAssessment.areas) {
+          if (area.rating > 0) { // Only save areas that were rated
+            await apiRequest('POST', `/api/assessments/${assessment.id}/metrics`, {
+              metricType: `${shotAssessment.shotType.toLowerCase().replace(' ', '_')}_${area.id}`,
+              rating: area.rating,
+              value: area.rating.toString() + '/5',
+              notes: area.notes,
+              videoUrl: videos && videos.length > 0 ? videos[0].url : ''
+            });
+          }
+        }
+      }
+      
       return assessment;
     },
     onSuccess: () => {

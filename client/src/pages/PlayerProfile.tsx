@@ -10,10 +10,12 @@ import VideoPlayer from "@/components/VideoPlayer";
 import NotesList from "@/components/NotesList";
 import PerformanceChart from "@/components/PerformanceChart";
 import type { Player, PerformanceAssessment, PerformanceMetric } from "@shared/schema";
+import { useState, useEffect } from "react";
 
 const PlayerProfile = () => {
   const params = useParams<{ id: string }>();
   const playerId = params.id ? parseInt(params.id) : 0;
+  const [allMetrics, setAllMetrics] = useState<PerformanceMetric[]>([]);
 
   const { data: player, isLoading: isPlayerLoading } = useQuery<Player>({
     queryKey: [`/api/players/${playerId}`],
@@ -25,11 +27,17 @@ const PlayerProfile = () => {
     enabled: !isNaN(playerId)
   });
 
-  // Always use assessment ID 1 for metrics, since this is where our data is stored
-  const { data: firstAssessmentMetrics, isLoading: isMetricsLoading } = useQuery<PerformanceMetric[]>({
-    queryKey: [`/api/assessments/1/metrics`],
-    enabled: !isNaN(playerId)
+  // Fetch metrics for the latest assessment to use in the performance chart
+  const { data: latestAssessmentMetrics, isLoading: isMetricsLoading } = useQuery<PerformanceMetric[]>({
+    queryKey: [`/api/assessments/${assessments?.[0]?.id}/metrics`],
+    enabled: !isNaN(playerId) && !!assessments && assessments.length > 0
   });
+
+  useEffect(() => {
+    if (latestAssessmentMetrics) {
+      setAllMetrics(latestAssessmentMetrics);
+    }
+  }, [latestAssessmentMetrics]);
 
   const isLoading = isPlayerLoading || isAssessmentsLoading || isMetricsLoading;
 
@@ -221,10 +229,10 @@ const PlayerProfile = () => {
       )}
 
       {/* Performance Progression Chart */}
-      {!isLoading && assessments && assessments.length > 0 && firstAssessmentMetrics && (
+      {!isLoading && assessments && assessments.length > 0 && latestAssessmentMetrics && (
         <PerformanceChart 
           assessments={assessments} 
-          metrics={firstAssessmentMetrics} 
+          metrics={latestAssessmentMetrics}
           className="mb-6"
         />
       )}
@@ -273,10 +281,14 @@ const PlayerProfile = () => {
         assessments && assessments
           .sort((a, b) => new Date(b.weekStart).getTime() - new Date(a.weekStart).getTime())
           .map((assessment, index) => {
-            // For the first assessment, use the fetched metrics
-            const metrics = index === 0 ? firstAssessmentMetrics || [] : [];
             const weekNumber = index + 1;
             const weekNotes = getWeeklyNotes(weekNumber);
+            
+            // Fetch metrics for this specific assessment
+            const { data: metrics = [] } = useQuery<PerformanceMetric[]>({
+              queryKey: [`/api/assessments/${assessment.id}/metrics`],
+              enabled: !isNaN(playerId) && assessment.id !== undefined
+            });
             
             return (
               <Card key={assessment.id} className="mb-6">
