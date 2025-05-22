@@ -113,15 +113,17 @@ const AssessmentHistoryCard = ({ assessment }: { assessment: PerformanceAssessme
                   
                   return (
                     <div key={metric.id} className="border border-neutral-200 rounded p-4">
-                      <div className="mb-2">
+                      <div className="flex justify-between items-center mb-3">
                         <h5 className="font-bold">{metricDisplayName}</h5>
+                        <StarRating 
+                          initialRating={metric.rating}
+                          readOnly={true}
+                        />
                       </div>
-                      <div className="mb-1 flex justify-between text-sm">
-                        <span>Performance Rating</span>
-                      </div>
-                      <RatingBar rating={metric.rating} />
                       <div className="mt-3 text-sm text-neutral-600">
-                        <p><strong>Notes:</strong> {metric.notes}</p>
+                        {metric.notes && (
+                          <p className="mb-2"><strong>Notes:</strong> {metric.notes}</p>
+                        )}
                         {matchingProblemArea && matchingProblemArea.notes && (
                           <p className="mt-2"><strong>Focus Area Notes:</strong> {matchingProblemArea.notes}</p>
                         )}
