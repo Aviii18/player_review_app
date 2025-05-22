@@ -331,7 +331,7 @@ const PlayerProfile = () => {
                     <h3 className="text-lg font-bold mb-3 text-secondary">General Performance Areas</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       {metrics.filter(metric => 
-                        ['reaction_time', 'bat_connect', 'shot_selection', 'footwork'].includes(metric.metricType)
+                        ['reaction_time', 'bat_connect', 'bat_swing', 'foot_movement'].includes(metric.metricType)
                       ).map((metric: PerformanceMetric) => {
                         const metricDisplayName = metric.metricType
                           .split('_')
@@ -359,11 +359,11 @@ const PlayerProfile = () => {
                   
                   {/* Other Metrics (if any) */}
                   {metrics.filter(metric => 
-                    !['cover_drive', 'straight_drive', 'reaction_time', 'bat_connect', 'shot_selection', 'footwork'].includes(metric.metricType)
+                    !['cover_drive', 'straight_drive', 'reaction_time', 'bat_connect', 'bat_swing', 'foot_movement'].includes(metric.metricType)
                   ).length > 0 && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       {metrics.filter(metric => 
-                        !['cover_drive', 'straight_drive', 'reaction_time', 'bat_connect', 'shot_selection', 'footwork'].includes(metric.metricType)
+                        !['cover_drive', 'straight_drive', 'reaction_time', 'bat_connect', 'bat_swing', 'foot_movement'].includes(metric.metricType)
                       ).map((metric: PerformanceMetric) => {
                         const metricDisplayName = metric.metricType
                           .split('_')
