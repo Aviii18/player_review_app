@@ -625,25 +625,10 @@ const PerformanceAssessment = () => {
                   <div className="space-y-4">
                     {shotSpecificAreas.map((area, index) => (
                       <div key={area.id} className="border border-neutral-200 rounded p-3">
-                        <div className="flex justify-between items-center mb-2">
-                          <div className="flex items-center space-x-2">
-                            <input
-                              type="checkbox"
-                              id={`focus-shot-${area.id}`}
-                              className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
-                              checked={focusAreas.includes(`shot-${area.id}`)}
-                              onChange={(e) => {
-                                if (e.target.checked) {
-                                  setFocusAreas([...focusAreas, `shot-${area.id}`]);
-                                } else {
-                                  setFocusAreas(focusAreas.filter(a => a !== `shot-${area.id}`));
-                                }
-                              }}
-                            />
-                            <Label htmlFor={`focus-shot-${area.id}`} className="font-medium cursor-pointer">
-                              {area.name}
-                            </Label>
-                          </div>
+                        <div className="flex justify-between items-center">
+                          <Label className="font-medium">
+                            {area.name}
+                          </Label>
                           <StarRating 
                             initialRating={area.rating}
                             onChange={(rating) => {
@@ -653,16 +638,6 @@ const PerformanceAssessment = () => {
                             }}
                           />
                         </div>
-                        <Textarea 
-                          className="w-full px-3 py-2 border border-neutral-200 rounded h-20 text-sm" 
-                          placeholder={`Add notes about ${area.name.toLowerCase()}...`}
-                          value={area.notes}
-                          onChange={(e) => {
-                            const updatedAreas = [...shotSpecificAreas];
-                            updatedAreas[index].notes = e.target.value;
-                            setShotSpecificAreas(updatedAreas);
-                          }}
-                        />
                       </div>
                     ))}
                   </div>
