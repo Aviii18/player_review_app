@@ -347,16 +347,7 @@ const PerformanceAssessment = () => {
                   <p><strong>Dominant Hand:</strong> {player.dominantHand || 'N/A'}</p>
                 </div>
 
-                <div className="mb-4">
-                  <Label htmlFor="session-notes" className="block mb-2">Session Notes</Label>
-                  <Textarea 
-                    id="session-notes"
-                    className="w-full px-3 py-2 border border-neutral-200 rounded h-24"
-                    placeholder="Enter overall session notes, observations, and feedback..."
-                    value={sessionNotes}
-                    onChange={(e) => setSessionNotes(e.target.value)}
-                  />
-                </div>
+
               </CardContent>
             </Card>
 
@@ -476,6 +467,64 @@ const PerformanceAssessment = () => {
                 <CardTitle className="text-xl">Performance Assessment</CardTitle>
               </CardHeader>
               <CardContent>
+                {/* Video Carousel */}
+                <div className="mb-6">
+                  <h4 className="font-medium mb-3">Training Videos</h4>
+                  <div className="grid grid-cols-2 gap-4 mb-4">
+                    <div className="border border-neutral-200 rounded overflow-hidden cursor-pointer hover:border-primary transition">
+                      <VideoPlayer 
+                        videoUrl="/videos/Video 1.mp4" 
+                        title="Cover Drive Technique"
+                        className="w-full"
+                      />
+                      <div className="p-2">
+                        <h5 className="font-medium text-sm">Cover Drive Technique</h5>
+                      </div>
+                    </div>
+                    <div className="border border-neutral-200 rounded overflow-hidden cursor-pointer hover:border-primary transition">
+                      <VideoPlayer 
+                        videoUrl="/videos/Video 2.mp4" 
+                        title="Pull Shot Practice"
+                        className="w-full"
+                      />
+                      <div className="p-2">
+                        <h5 className="font-medium text-sm">Pull Shot Practice</h5>
+                      </div>
+                    </div>
+                    <div className="border border-neutral-200 rounded overflow-hidden cursor-pointer hover:border-primary transition">
+                      <VideoPlayer 
+                        videoUrl="/videos/Video 3.mp4" 
+                        title="Sweep Shot Technique"
+                        className="w-full"
+                      />
+                      <div className="p-2">
+                        <h5 className="font-medium text-sm">Sweep Shot Technique</h5>
+                      </div>
+                    </div>
+                    <div className="border border-neutral-200 rounded overflow-hidden cursor-pointer hover:border-primary transition">
+                      <VideoPlayer 
+                        videoUrl="/videos/Video 4.mp4" 
+                        title="Cut Shot Training"
+                        className="w-full"
+                      />
+                      <div className="p-2">
+                        <h5 className="font-medium text-sm">Cut Shot Training</h5>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="mb-6">
+                  <Label htmlFor="session-notes" className="block mb-2 font-medium">Session Notes</Label>
+                  <Textarea 
+                    id="session-notes"
+                    className="w-full px-3 py-2 border border-neutral-200 rounded h-24"
+                    placeholder="Enter overall session notes, observations, and feedback..."
+                    value={sessionNotes}
+                    onChange={(e) => setSessionNotes(e.target.value)}
+                  />
+                </div>
+                
                 {/* Video Player */}
                 {selectedVideo ? (
                   <div className="mb-6">
