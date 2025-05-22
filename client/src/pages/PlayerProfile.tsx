@@ -295,34 +295,111 @@ const PlayerProfile = () => {
                   </div>
                 </div>
                 <CardContent className="p-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {metrics.map((metric: PerformanceMetric) => {
-                      const metricDisplayName = metric.metricType
-                        .split('_')
-                        .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
-                        .join(' ');
-                        
-                      return (
-                        <div key={metric.id} className="border border-neutral-200 rounded p-4">
-                          <div className="flex justify-between items-center mb-2">
-                            <h5 className="font-bold">{metricDisplayName}</h5>
-                            <VideoPlayer 
-                              videoUrl={metric.videoUrl || ""}
-                              title={`${metricDisplayName} Assessment - ${format(new Date(assessment.weekEnd), "MMMM d, yyyy")}`}
-                            />
+                  {/* Shot Specific Performance Areas */}
+                  <div className="mb-6 border-2 border-amber-500/20 rounded-lg p-4 bg-amber-500/5">
+                    <h3 className="text-lg font-bold mb-3 text-amber-600">Shot Specific Performance Areas</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {metrics.filter(metric => 
+                        ['cover_drive', 'straight_drive'].includes(metric.metricType)
+                      ).map((metric: PerformanceMetric) => {
+                        const metricDisplayName = metric.metricType
+                          .split('_')
+                          .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
+                          .join(' ');
+                          
+                        return (
+                          <div key={metric.id} className="border border-neutral-200 rounded p-4">
+                            <div className="flex justify-between items-center mb-2">
+                              <h5 className="font-bold">{metricDisplayName}</h5>
+                              <VideoPlayer 
+                                videoUrl={metric.videoUrl || ""}
+                                title={`${metricDisplayName} Assessment - ${format(new Date(assessment.weekEnd), "MMMM d, yyyy")}`}
+                              />
+                            </div>
+                            <div className="mb-1 flex justify-between text-sm">
+                              <span>Performance</span>
+                              <span className="font-mono">{metric.value}</span>
+                            </div>
+                            <RatingBar rating={metric.rating} />
+                            <div className="mt-3 text-sm text-neutral-600">
+                              <p>{metric.notes}</p>
+                            </div>
                           </div>
-                          <div className="mb-1 flex justify-between text-sm">
-                            <span>Performance</span>
-                            <span className="font-mono">{metric.value}</span>
-                          </div>
-                          <RatingBar rating={metric.rating} />
-                          <div className="mt-3 text-sm text-neutral-600">
-                            <p>{metric.notes}</p>
-                          </div>
-                        </div>
-                      );
-                    })}
+                        );
+                      })}
+                    </div>
                   </div>
+                  
+                  {/* General Performance Areas */}
+                  <div className="mb-6 border-2 border-secondary/10 rounded-lg p-4 bg-secondary/5">
+                    <h3 className="text-lg font-bold mb-3 text-secondary">General Performance Areas</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {metrics.filter(metric => 
+                        ['reaction_time', 'bat_connect', 'shot_selection', 'footwork'].includes(metric.metricType)
+                      ).map((metric: PerformanceMetric) => {
+                        const metricDisplayName = metric.metricType
+                          .split('_')
+                          .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
+                          .join(' ');
+                          
+                        return (
+                          <div key={metric.id} className="border border-neutral-200 rounded p-4">
+                            <div className="flex justify-between items-center mb-2">
+                              <h5 className="font-bold">{metricDisplayName}</h5>
+                              <VideoPlayer 
+                                videoUrl={metric.videoUrl || ""}
+                                title={`${metricDisplayName} Assessment - ${format(new Date(assessment.weekEnd), "MMMM d, yyyy")}`}
+                              />
+                            </div>
+                            <div className="mb-1 flex justify-between text-sm">
+                              <span>Performance</span>
+                              <span className="font-mono">{metric.value}</span>
+                            </div>
+                            <RatingBar rating={metric.rating} />
+                            <div className="mt-3 text-sm text-neutral-600">
+                              <p>{metric.notes}</p>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                  
+                  {/* Other Metrics (if any) */}
+                  {metrics.filter(metric => 
+                    !['cover_drive', 'straight_drive', 'reaction_time', 'bat_connect', 'shot_selection', 'footwork'].includes(metric.metricType)
+                  ).length > 0 && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {metrics.filter(metric => 
+                        !['cover_drive', 'straight_drive', 'reaction_time', 'bat_connect', 'shot_selection', 'footwork'].includes(metric.metricType)
+                      ).map((metric: PerformanceMetric) => {
+                        const metricDisplayName = metric.metricType
+                          .split('_')
+                          .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
+                          .join(' ');
+                          
+                        return (
+                          <div key={metric.id} className="border border-neutral-200 rounded p-4">
+                            <div className="flex justify-between items-center mb-2">
+                              <h5 className="font-bold">{metricDisplayName}</h5>
+                              <VideoPlayer 
+                                videoUrl={metric.videoUrl || ""}
+                                title={`${metricDisplayName} Assessment - ${format(new Date(assessment.weekEnd), "MMMM d, yyyy")}`}
+                              />
+                            </div>
+                            <div className="mb-1 flex justify-between text-sm">
+                              <span>Performance</span>
+                              <span className="font-mono">{metric.value}</span>
+                            </div>
+                            <RatingBar rating={metric.rating} />
+                            <div className="mt-3 text-sm text-neutral-600">
+                              <p>{metric.notes}</p>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             );
