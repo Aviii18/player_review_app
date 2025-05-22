@@ -12,10 +12,9 @@ import PerformanceChart from "@/components/PerformanceChart";
 import type { Player, PerformanceAssessment, PerformanceMetric } from "@shared/schema";
 
 // Component to render a single week's assessment with its metrics
-const WeeklyAssessment = ({ assessment, weekNotes, weekNumber }: {
+const WeeklyAssessment = ({ assessment, weekNotes }: {
   assessment: PerformanceAssessment;
   weekNotes: any[];
-  weekNumber: number;
 }) => {
   const { data: metrics = [] } = useQuery<PerformanceMetric[]>({
     queryKey: [`/api/assessments/${assessment.id}/metrics`],
