@@ -10,12 +10,136 @@ import VideoPlayer from "@/components/VideoPlayer";
 import NotesList from "@/components/NotesList";
 import PerformanceChart from "@/components/PerformanceChart";
 import type { Player, PerformanceAssessment, PerformanceMetric } from "@shared/schema";
-import { useState, useEffect } from "react";
+
+// Component to render a single week's assessment with its metrics
+const WeeklyAssessment = ({ assessment, weekNotes, weekNumber }: {
+  assessment: PerformanceAssessment;
+  weekNotes: any[];
+  weekNumber: number;
+}) => {
+  const { data: metrics = [] } = useQuery<PerformanceMetric[]>({
+    queryKey: [`/api/assessments/${assessment.id}/metrics`],
+    enabled: assessment.id !== undefined
+  });
+
+  return (
+    <Card className="mb-6">
+      <div className="bg-primary text-white px-6 py-3 flex justify-between items-center rounded-t-lg">
+        <h4 className="font-bold">
+          Week of {format(new Date(assessment.weekStart), "MMMM d")} - {format(new Date(assessment.weekEnd), "MMMM d, yyyy")}
+        </h4>
+        <div className="flex space-x-2">
+          <NotesList 
+            title={`Weekly Notes - ${format(new Date(assessment.weekStart), "MMMM d")} - ${format(new Date(assessment.weekEnd), "MMMM d, yyyy")}`}
+            notes={weekNotes}
+          />
+          {assessment.isLatest && (
+            <span className="text-sm bg-white text-primary font-bold px-2 py-1 rounded">Most Recent</span>
+          )}
+        </div>
+      </div>
+      <CardContent className="p-6">
+        {/* Shot Specific Performance Areas */}
+        <div className="mb-6 border-2 border-amber-500/20 rounded-lg p-4 bg-amber-500/5">
+          <h3 className="text-lg font-bold mb-3 text-amber-600">Shot Specific Performance Areas</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {metrics.filter(metric => 
+              ['cover_drive', 'straight_drive'].includes(metric.metricType)
+            ).map((metric: PerformanceMetric) => {
+              const metricDisplayName = metric.metricType
+                .split('_')
+                .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
+                .join(' ');
+                
+              return (
+                <div key={metric.id} className="border border-neutral-200 rounded p-4">
+                  <div className="mb-2">
+                    <h5 className="font-bold">{metricDisplayName}</h5>
+                  </div>
+                  <div className="mb-1 flex justify-between text-sm">
+                    <span>Performance</span>
+                    <span className="font-mono">{metric.value}</span>
+                  </div>
+                  <RatingBar rating={metric.rating} />
+                  <div className="mt-3 text-sm text-neutral-600">
+                    <p>{metric.notes}</p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+        
+        {/* General Performance Areas */}
+        <div className="mb-6 border-2 border-secondary/10 rounded-lg p-4 bg-secondary/5">
+          <h3 className="text-lg font-bold mb-3 text-secondary">General Performance Areas</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {metrics.filter(metric => 
+              ['reaction_time', 'bat_connect', 'bat_swing', 'foot_movement'].includes(metric.metricType)
+            ).map((metric: PerformanceMetric) => {
+              const metricDisplayName = metric.metricType
+                .split('_')
+                .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
+                .join(' ');
+                
+              return (
+                <div key={metric.id} className="border border-neutral-200 rounded p-4">
+                  <div className="mb-2">
+                    <h5 className="font-bold">{metricDisplayName}</h5>
+                  </div>
+                  <div className="mb-1 flex justify-between text-sm">
+                    <span>Performance</span>
+                    <span className="font-mono">{metric.value}</span>
+                  </div>
+                  <RatingBar rating={metric.rating} />
+                  <div className="mt-3 text-sm text-neutral-600">
+                    <p>{metric.notes}</p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+        
+        {/* Other Metrics (if any) */}
+        {metrics.filter(metric => 
+          !['cover_drive', 'straight_drive', 'reaction_time', 'bat_connect', 'bat_swing', 'foot_movement'].includes(metric.metricType)
+        ).length > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {metrics.filter(metric => 
+              !['cover_drive', 'straight_drive', 'reaction_time', 'bat_connect', 'bat_swing', 'foot_movement'].includes(metric.metricType)
+            ).map((metric: PerformanceMetric) => {
+              const metricDisplayName = metric.metricType
+                .split('_')
+                .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
+                .join(' ');
+                
+              return (
+                <div key={metric.id} className="border border-neutral-200 rounded p-4">
+                  <div className="mb-2">
+                    <h5 className="font-bold">{metricDisplayName}</h5>
+                  </div>
+                  <div className="mb-1 flex justify-between text-sm">
+                    <span>Performance</span>
+                    <span className="font-mono">{metric.value}</span>
+                  </div>
+                  <RatingBar rating={metric.rating} />
+                  <div className="mt-3 text-sm text-neutral-600">
+                    <p>{metric.notes}</p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+};
 
 const PlayerProfile = () => {
   const params = useParams<{ id: string }>();
   const playerId = params.id ? parseInt(params.id) : 0;
-  const [allMetrics, setAllMetrics] = useState<PerformanceMetric[]>([]);
 
   const { data: player, isLoading: isPlayerLoading } = useQuery<Player>({
     queryKey: [`/api/players/${playerId}`],
@@ -27,17 +151,14 @@ const PlayerProfile = () => {
     enabled: !isNaN(playerId)
   });
 
+  // Get the latest assessment ID for chart metrics
+  const latestAssessmentId = assessments && assessments.length > 0 ? assessments[0].id : undefined;
+  
   // Fetch metrics for the latest assessment to use in the performance chart
-  const { data: latestAssessmentMetrics, isLoading: isMetricsLoading } = useQuery<PerformanceMetric[]>({
-    queryKey: [`/api/assessments/${assessments?.[0]?.id}/metrics`],
-    enabled: !isNaN(playerId) && !!assessments && assessments.length > 0
+  const { data: chartMetrics, isLoading: isMetricsLoading } = useQuery<PerformanceMetric[]>({
+    queryKey: [`/api/assessments/${latestAssessmentId}/metrics`],
+    enabled: !isNaN(playerId) && latestAssessmentId !== undefined
   });
-
-  useEffect(() => {
-    if (latestAssessmentMetrics) {
-      setAllMetrics(latestAssessmentMetrics);
-    }
-  }, [latestAssessmentMetrics]);
 
   const isLoading = isPlayerLoading || isAssessmentsLoading || isMetricsLoading;
 
@@ -229,10 +350,10 @@ const PlayerProfile = () => {
       )}
 
       {/* Performance Progression Chart */}
-      {!isLoading && assessments && assessments.length > 0 && latestAssessmentMetrics && (
+      {!isLoading && assessments && assessments.length > 0 && chartMetrics && (
         <PerformanceChart 
           assessments={assessments} 
-          metrics={latestAssessmentMetrics}
+          metrics={chartMetrics}
           className="mb-6"
         />
       )}
@@ -284,243 +405,15 @@ const PlayerProfile = () => {
             const weekNumber = index + 1;
             const weekNotes = getWeeklyNotes(weekNumber);
             
-            // Fetch metrics for this specific assessment
-            const { data: metrics = [] } = useQuery<PerformanceMetric[]>({
-              queryKey: [`/api/assessments/${assessment.id}/metrics`],
-              enabled: !isNaN(playerId) && assessment.id !== undefined
-            });
-            
             return (
-              <Card key={assessment.id} className="mb-6">
-                <div className="bg-primary text-white px-6 py-3 flex justify-between items-center rounded-t-lg">
-                  <h4 className="font-bold">
-                    Week of {format(new Date(assessment.weekStart), "MMMM d")} - {format(new Date(assessment.weekEnd), "MMMM d, yyyy")}
-                  </h4>
-                  <div className="flex space-x-2">
-                    <NotesList 
-                      title={`Weekly Notes - ${format(new Date(assessment.weekStart), "MMMM d")} - ${format(new Date(assessment.weekEnd), "MMMM d, yyyy")}`}
-                      notes={weekNotes}
-                    />
-                    {assessment.isLatest && (
-                      <span className="text-sm bg-white text-primary font-bold px-2 py-1 rounded">Most Recent</span>
-                    )}
-                  </div>
-                </div>
-                <CardContent className="p-6">
-                  {/* Shot Specific Performance Areas */}
-                  <div className="mb-6 border-2 border-amber-500/20 rounded-lg p-4 bg-amber-500/5">
-                    <h3 className="text-lg font-bold mb-3 text-amber-600">Shot Specific Performance Areas</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {metrics.filter(metric => 
-                        ['cover_drive', 'straight_drive'].includes(metric.metricType)
-                      ).map((metric: PerformanceMetric) => {
-                        const metricDisplayName = metric.metricType
-                          .split('_')
-                          .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
-                          .join(' ');
-                          
-                        return (
-                          <div key={metric.id} className="border border-neutral-200 rounded p-4">
-                            <div className="mb-2">
-                              <h5 className="font-bold">{metricDisplayName}</h5>
-                            </div>
-                            <div className="mb-1 flex justify-between text-sm">
-                              <span>Performance</span>
-                              <span className="font-mono">{metric.value}</span>
-                            </div>
-                            <RatingBar rating={metric.rating} />
-                            <div className="mt-3 text-sm text-neutral-600">
-                              <p>{metric.notes}</p>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                  
-                  {/* General Performance Areas */}
-                  <div className="mb-6 border-2 border-secondary/10 rounded-lg p-4 bg-secondary/5">
-                    <h3 className="text-lg font-bold mb-3 text-secondary">General Performance Areas</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {metrics.filter(metric => 
-                        ['reaction_time', 'bat_connect', 'bat_swing', 'foot_movement'].includes(metric.metricType)
-                      ).map((metric: PerformanceMetric) => {
-                        const metricDisplayName = metric.metricType
-                          .split('_')
-                          .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
-                          .join(' ');
-                          
-                        return (
-                          <div key={metric.id} className="border border-neutral-200 rounded p-4">
-                            <div className="mb-2">
-                              <h5 className="font-bold">{metricDisplayName}</h5>
-                            </div>
-                            <div className="mb-1 flex justify-between text-sm">
-                              <span>Performance</span>
-                              <span className="font-mono">{metric.value}</span>
-                            </div>
-                            <RatingBar rating={metric.rating} />
-                            <div className="mt-3 text-sm text-neutral-600">
-                              <p>{metric.notes}</p>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                  
-                  {/* Other Metrics (if any) */}
-                  {metrics.filter(metric => 
-                    !['cover_drive', 'straight_drive', 'reaction_time', 'bat_connect', 'bat_swing', 'foot_movement'].includes(metric.metricType)
-                  ).length > 0 && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {metrics.filter(metric => 
-                        !['cover_drive', 'straight_drive', 'reaction_time', 'bat_connect', 'bat_swing', 'foot_movement'].includes(metric.metricType)
-                      ).map((metric: PerformanceMetric) => {
-                        const metricDisplayName = metric.metricType
-                          .split('_')
-                          .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
-                          .join(' ');
-                          
-                        return (
-                          <div key={metric.id} className="border border-neutral-200 rounded p-4">
-                            <div className="mb-2">
-                              <h5 className="font-bold">{metricDisplayName}</h5>
-                            </div>
-                            <div className="mb-1 flex justify-between text-sm">
-                              <span>Performance</span>
-                              <span className="font-mono">{metric.value}</span>
-                            </div>
-                            <RatingBar rating={metric.rating} />
-                            <div className="mt-3 text-sm text-neutral-600">
-                              <p>{metric.notes}</p>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+              <WeeklyAssessment 
+                key={assessment.id}
+                assessment={assessment}
+                weekNotes={weekNotes}
+              />
             );
           })
       )}
-
-      {/* Video Library Section with Actions */}
-      <div className="flex justify-between items-center mt-8 mb-4">
-        <h3 className="text-xl font-bold text-neutral-400">Video Library</h3>
-        <Link href={`/players/${playerId}/record`}>
-          <Button className="bg-primary hover:bg-primary-dark">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1">
-              <circle cx="12" cy="12" r="10"></circle>
-              <circle cx="12" cy="12" r="3"></circle>
-            </svg>
-            Record New Video
-          </Button>
-        </Link>
-      </div>
-      
-      {/* Week 1 */}
-      <Card className="mb-6">
-        <div className="bg-primary text-white px-6 py-3 flex justify-between items-center rounded-t-lg">
-          <h4 className="font-bold">Week of July 24 - July 30, 2023</h4>
-        </div>
-        <CardContent className="p-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {["Cover Drive", "Pull Shot", "Straight Drive", "Defensive Block"].map((shotType, index) => (
-              <div key={index} className="video-thumbnail bg-neutral-100 rounded-lg overflow-hidden">
-                <div className="h-36 relative">
-                  <div className="absolute inset-0 flex items-center justify-center bg-neutral-200">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="text-primary" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <circle cx="12" cy="12" r="10"></circle>
-                      <polygon points="10 8 16 12 10 16 10 8"></polygon>
-                    </svg>
-                  </div>
-                </div>
-                <div className="p-3">
-                  <p className="font-medium text-sm">{shotType}</p>
-                  <div className="flex items-center mt-1">
-                    <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full mr-1">
-                      {index % 2 === 0 ? "Middle" : "Edge"}
-                    </span>
-                    <span className="text-xs bg-neutral-200 text-neutral-600 px-2 py-0.5 rounded-full">
-                      {index % 2 === 0 ? "Medium" : "Fast"}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-      
-      {/* Week 2 */}
-      <Card className="mb-6">
-        <div className="bg-primary text-white px-6 py-3 flex justify-between items-center rounded-t-lg">
-          <h4 className="font-bold">Week of July 17 - July 23, 2023</h4>
-        </div>
-        <CardContent className="p-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {["Cover Drive", "Sweep Shot", "Square Cut", "Flick"].map((shotType, index) => (
-              <div key={index} className="video-thumbnail bg-neutral-100 rounded-lg overflow-hidden">
-                <div className="h-36 relative">
-                  <div className="absolute inset-0 flex items-center justify-center bg-neutral-200">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="text-primary" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <circle cx="12" cy="12" r="10"></circle>
-                      <polygon points="10 8 16 12 10 16 10 8"></polygon>
-                    </svg>
-                  </div>
-                </div>
-                <div className="p-3">
-                  <p className="font-medium text-sm">{shotType}</p>
-                  <div className="flex items-center mt-1">
-                    <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full mr-1">
-                      {index % 3 === 0 ? "Middle" : index % 3 === 1 ? "Edge" : "Missed"}
-                    </span>
-                    <span className="text-xs bg-neutral-200 text-neutral-600 px-2 py-0.5 rounded-full">
-                      {index % 2 === 0 ? "Slow" : "Medium"}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-      
-      {/* Week 3 */}
-      <Card className="mb-6">
-        <div className="bg-primary text-white px-6 py-3 flex justify-between items-center rounded-t-lg">
-          <h4 className="font-bold">Week of July 10 - July 16, 2023</h4>
-        </div>
-        <CardContent className="p-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {["Cover Drive", "Reverse Sweep", "On Drive", "Defensive Block"].map((shotType, index) => (
-              <div key={index} className="video-thumbnail bg-neutral-100 rounded-lg overflow-hidden">
-                <div className="h-36 relative">
-                  <div className="absolute inset-0 flex items-center justify-center bg-neutral-200">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="text-primary" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <circle cx="12" cy="12" r="10"></circle>
-                      <polygon points="10 8 16 12 10 16 10 8"></polygon>
-                    </svg>
-                  </div>
-                </div>
-                <div className="p-3">
-                  <p className="font-medium text-sm">{shotType}</p>
-                  <div className="flex items-center mt-1">
-                    <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full mr-1">
-                      {index % 4 === 0 ? "Middle" : index % 4 === 1 ? "Edge" : index % 4 === 2 ? "Bottom" : "Missed"}
-                    </span>
-                    <span className="text-xs bg-neutral-200 text-neutral-600 px-2 py-0.5 rounded-full">
-                      {index % 3 === 0 ? "Fast" : index % 3 === 1 ? "Medium" : "Slow"}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 };
