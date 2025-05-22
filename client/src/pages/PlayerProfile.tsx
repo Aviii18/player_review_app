@@ -377,7 +377,7 @@ const PlayerProfile = () => {
                           <p className="font-mono font-bold">82%</p>
                         </div>
                         <div className="bg-primary/10 p-3 rounded">
-                          <p className="text-xs text-neutral-600 font-medium">Footwork Score</p>
+                          <p className="text-xs text-neutral-600 font-medium">Foot Movement Score</p>
                           <p className="font-mono font-bold">7.5/10</p>
                         </div>
                       </div>
