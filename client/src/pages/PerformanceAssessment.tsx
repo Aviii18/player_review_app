@@ -58,7 +58,9 @@ const PerformanceAssessment = () => {
   const [focusAreas, setFocusAreas] = useState<string[]>([]);
   const [problemAreas, setProblemAreas] = useState<ProblemAreaInput[]>([
     { areaType: "bat_connect", rating: 0, notes: "" },
-    { areaType: "foot_movement", rating: 0, notes: "" }
+    { areaType: "foot_movement", rating: 0, notes: "" },
+    { areaType: "bat_swing", rating: 0, notes: "" },
+    { areaType: "reaction_time", rating: 0, notes: "" }
   ]);
   
   // Shot Specific Performance Areas
@@ -200,7 +202,7 @@ const PerformanceAssessment = () => {
     createAssessment.mutate();
   };
 
-  const handleProblemAreaChange = (index: number, field: keyof ProblemArea, value: string | number) => {
+  const handleProblemAreaChange = (index: number, field: keyof ProblemAreaInput, value: string | number) => {
     const newProblemAreas = [...problemAreas];
     newProblemAreas[index] = {
       ...newProblemAreas[index],
@@ -212,13 +214,13 @@ const PerformanceAssessment = () => {
   const addProblemArea = () => {
     // Add a new problem area with default values
     const problemAreaTypes = ["bat_connect", "foot_movement", "bat_swing", "reaction_time"];
-    const existingTypes = problemAreas.map(pa => pa.type);
+    const existingTypes = problemAreas.map(pa => pa.areaType);
     const availableTypes = problemAreaTypes.filter(type => !existingTypes.includes(type));
     
     if (availableTypes.length > 0) {
       setProblemAreas([
         ...problemAreas,
-        { type: availableTypes[0], rating: 0, notes: "" }
+        { areaType: availableTypes[0], rating: 0, notes: "" }
       ]);
     } else {
       toast({
@@ -637,7 +639,7 @@ const PerformanceAssessment = () => {
                     <div key={index} className="border border-neutral-200 rounded p-3 mb-3">
                       <div className="flex justify-between items-center mb-2">
                         <Label className="font-medium">
-                          {getProblemAreaName(area.type)}
+                          {getProblemAreaName(area.areaType)}
                         </Label>
                         <StarRating 
                           initialRating={area.rating}
@@ -646,7 +648,7 @@ const PerformanceAssessment = () => {
                       </div>
                       <Textarea 
                         className="w-full px-3 py-2 border border-neutral-200 rounded mt-2" 
-                        placeholder={`Notes for ${getProblemAreaName(area.type)}...`}
+                        placeholder={`Notes for ${getProblemAreaName(area.areaType)}...`}
                         value={area.notes}
                         onChange={(e) => handleProblemAreaChange(index, 'notes', e.target.value)}
                         rows={2}
