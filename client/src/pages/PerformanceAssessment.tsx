@@ -35,13 +35,13 @@ const PerformanceAssessment = () => {
     ballLength: string;
     ballSpeed: string;
     batConnect: string;
-    notes: string;
+    footwork: string;
   }>({
     shotType: '',
     ballLength: '',
     ballSpeed: '',
     batConnect: '',
-    notes: ''
+    footwork: ''
   });
 
   const { data: player, isLoading: isPlayerLoading } = useQuery<Player>({
