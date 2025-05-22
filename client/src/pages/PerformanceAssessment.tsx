@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useParams, Link, useLocation } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { format, addDays, previousMonday } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -50,8 +51,10 @@ const PerformanceAssessment = () => {
     enabled: !isNaN(playerId)
   });
 
-  const [shotTypeFilter, setShotTypeFilter] = useState("All Shot Types");
-  const [ballSpeedFilter, setBallSpeedFilter] = useState("All Speeds");
+  // Filter state
+  const [shotTypeFilter, setShotTypeFilter] = useState("All");
+  const [ballLengthFilter, setBallLengthFilter] = useState("All");
+  const [ballSpeedFilter, setBallSpeedFilter] = useState("All");
   const [batConnectFilter, setBatConnectFilter] = useState("All");
   const [footworkFilter, setFootworkFilter] = useState("All");
   const [sessionNotes, setSessionNotes] = useState("");
@@ -118,8 +121,27 @@ const PerformanceAssessment = () => {
   const { data: videos, isLoading: isVideosLoading } = useQuery<Video[]>({
     queryKey: [
       `/api/players/${playerId}/videos`, 
-      { shotType: shotTypeFilter, ballSpeed: ballSpeedFilter, batConnect: batConnectFilter, footwork: footworkFilter }
+      shotTypeFilter,
+      ballLengthFilter,
+      ballSpeedFilter,
+      batConnectFilter,
+      footworkFilter
     ],
+    queryFn: async ({ queryKey }) => {
+      const [_path, shotType, ballLength, ballSpeed, batConnect, footwork] = queryKey as [string, string, string, string, string, string];
+      
+      const params = new URLSearchParams();
+      if (shotType !== "All") params.append("shotType", shotType);
+      if (ballLength !== "All") params.append("ballLength", ballLength);
+      if (ballSpeed !== "All") params.append("ballSpeed", ballSpeed);
+      if (batConnect !== "All") params.append("batConnect", batConnect);
+      if (footwork !== "All") params.append("footwork", footwork);
+      
+      const queryString = params.toString();
+      const url = queryString ? `${_path}?${queryString}` : _path;
+      
+      return apiRequest('GET', url);
+    },
     enabled: !isNaN(playerId)
   });
 
@@ -128,11 +150,8 @@ const PerformanceAssessment = () => {
     mutationFn: async () => {
       // Create assessment
       const today = new Date();
-      const weekStart = new Date(today);
-      weekStart.setDate(today.getDate() - today.getDay()); // Start of current week (Sunday)
-      
-      const weekEnd = new Date(weekStart);
-      weekEnd.setDate(weekStart.getDate() + 6); // End of week (Saturday)
+      const weekStart = format(previousMonday(today), 'yyyy-MM-dd');
+      const weekEnd = format(addDays(new Date(weekStart), 6), 'yyyy-MM-dd');
       
       const assessmentResponse = await apiRequest('POST', `/api/players/${playerId}/assessments`, {
         weekStart,
@@ -141,7 +160,7 @@ const PerformanceAssessment = () => {
         isLatest: true
       });
       
-      const assessment = await assessmentResponse.json();
+      const assessment = assessmentResponse;
       
       // Create problem areas for this assessment
       const validProblemAreas = problemAreas.filter(pa => pa.rating > 0);
@@ -167,15 +186,14 @@ const PerformanceAssessment = () => {
         
         // Save each specific technical area within the shot
         for (const area of shotAssessment.areas) {
-          if (area.rating > 0) { // Only save areas that were rated
-            await apiRequest('POST', `/api/assessments/${assessment.id}/metrics`, {
-              metricType: `${shotAssessment.shotType.toLowerCase().replace(' ', '_')}_${area.id}`,
-              rating: area.rating,
-              value: area.rating.toString() + '/5',
-              notes: area.notes,
-              videoUrl: videos && videos.length > 0 ? videos[0].url : ''
-            });
-          }
+          // We need to save all areas for proper display later
+          await apiRequest('POST', `/api/assessments/${assessment.id}/metrics`, {
+            metricType: `${shotAssessment.shotType.toLowerCase().replace(' ', '_')}_${area.id}`,
+            rating: area.rating,
+            value: area.rating === 1 ? 'Needs Work' : 'Good',
+            notes: area.notes,
+            videoUrl: videos && videos.length > 0 ? videos[0].url : ''
+          });
         }
       }
       
@@ -233,170 +251,73 @@ const PerformanceAssessment = () => {
 
   const getProblemAreaName = (type: string) => {
     const nameMap: Record<string, string> = {
-      bat_connect: "Bat Connect",
-      foot_movement: "Foot Movement",
-      bat_swing: "Bat Swing",
-      reaction_time: "Reaction Time"
+      'bat_connect': 'Bat Connect',
+      'foot_movement': 'Foot Movement',
+      'bat_swing': 'Bat Swing',
+      'reaction_time': 'Reaction Time'
     };
     return nameMap[type] || type;
   };
 
-  // Video tagging functions
   const handleVideoSelect = (video: Video) => {
     setSelectedVideo(video);
-    // Initialize tags with video's existing values
+    
+    // Reset video tags
     setVideoTags({
       shotType: video.shotType || '',
-      ballLength: 'Full', // New property not in Video type
-      ballSpeed: video.ballSpeed || 'Medium',
-      batConnect: video.batConnect || 'Middle',
-      footwork: 'Good'
-    });
-    setIsTaggingMode(true);
-  };
-  
-  const handleTagChange = (field: keyof typeof videoTags, value: string) => {
-    setVideoTags({
-      ...videoTags,
-      [field]: value
-    });
-  };
-  
-  const handleSaveTags = () => {
-    if (!selectedVideo) return;
-    
-    // In a real implementation, this would save the tags to the backend
-    // Here we just update the UI and show a toast
-    toast({
-      title: "Shot Tagged",
-      description: `Tagged ${selectedVideo.title} with ${videoTags.shotType}, ${videoTags.ballLength} length, ${videoTags.ballSpeed} speed, ${videoTags.footwork} footwork`,
+      ballLength: video.ballLength || '',
+      ballSpeed: video.ballSpeed || '',
+      batConnect: video.batConnect || '',
+      footwork: video.footwork || ''
     });
     
     setIsTaggingMode(false);
   };
 
-  const isLoading = isPlayerLoading || isVideosLoading;
-  const isPending = createAssessment.isPending;
+  const startTaggingMode = () => {
+    if (!selectedVideo) return;
+    setIsTaggingMode(true);
+  };
 
-  // Carousel logic
-  const [carouselPosition, setCarouselPosition] = useState(0);
-  const moveCarousel = (direction: 'prev' | 'next') => {
-    if (!videos) return;
+  const updateVideoTag = (field: keyof typeof videoTags, value: string) => {
+    setVideoTags({ ...videoTags, [field]: value });
+  };
+
+  const saveVideoTags = async () => {
+    if (!selectedVideo) return;
     
-    const cardWidth = 264; // card width + margin
-    const maxVideos = videos.length;
-    const visibleVideos = 3; // Show 3 items at a time on desktop
-    
-    if (direction === 'prev') {
-      setCarouselPosition(Math.min(carouselPosition + cardWidth, 0));
-    } else {
-      const maxPosition = -((maxVideos - visibleVideos) * cardWidth);
-      setCarouselPosition(Math.max(carouselPosition - cardWidth, maxPosition));
+    try {
+      await apiRequest('POST', `/api/players/${playerId}/videos`, {
+        id: selectedVideo.id,
+        ...videoTags
+      });
+      
+      toast({
+        title: "Video tagged",
+        description: "Video attributes have been updated successfully.",
+      });
+      
+      queryClient.invalidateQueries({ queryKey: [`/api/players/${playerId}/videos`] });
+      setIsTaggingMode(false);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update video attributes.",
+        variant: "destructive"
+      });
     }
   };
 
+  if (isPlayerLoading || isVideosLoading) {
+    return <div className="container mx-auto px-4 py-8"><Skeleton className="h-screen w-full" /></div>;
+  }
+
+  const handleFocusAreaToggle = (area: string) => {
+    setFocusAreas(prev => prev.includes(area) ? prev.filter(a => a !== area) : [...prev, area]);
+  };
+
   return (
-    <div className="container mx-auto px-4 py-6">
-      {isTaggingMode && selectedVideo && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg max-w-2xl w-full p-6">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-bold">Tag Video: {selectedVideo.title}</h3>
-              <Button variant="ghost" size="sm" onClick={() => setIsTaggingMode(false)}>
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="18" y1="6" x2="6" y2="18"></line>
-                  <line x1="6" y1="6" x2="18" y2="18"></line>
-                </svg>
-              </Button>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <div>
-                <Label htmlFor="shotType">Shot Type</Label>
-                <Select value={videoTags.shotType} onValueChange={(value) => handleTagChange('shotType', value)}>
-                  <SelectTrigger id="shotType">
-                    <SelectValue placeholder="Select Shot Type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Cover Drive">Cover Drive</SelectItem>
-                    <SelectItem value="Straight Drive">Straight Drive</SelectItem>
-                    <SelectItem value="Pull Shot">Pull Shot</SelectItem>
-                    <SelectItem value="Cut Shot">Cut Shot</SelectItem>
-                    <SelectItem value="Defensive Block">Defensive Block</SelectItem>
-                    <SelectItem value="Sweep">Sweep</SelectItem>
-                    <SelectItem value="Flick">Flick</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div>
-                <Label htmlFor="ballLength">Ball Length</Label>
-                <Select value={videoTags.ballLength} onValueChange={(value) => handleTagChange('ballLength', value)}>
-                  <SelectTrigger id="ballLength">
-                    <SelectValue placeholder="Select Ball Length" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Full">Full</SelectItem>
-                    <SelectItem value="Good">Good</SelectItem>
-                    <SelectItem value="Short">Short</SelectItem>
-                    <SelectItem value="Yorker">Yorker</SelectItem>
-                    <SelectItem value="Half-volley">Half-volley</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div>
-                <Label htmlFor="ballSpeed">Ball Speed</Label>
-                <Select value={videoTags.ballSpeed} onValueChange={(value) => handleTagChange('ballSpeed', value)}>
-                  <SelectTrigger id="ballSpeed">
-                    <SelectValue placeholder="Select Ball Speed" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Fast">Fast (80+ km/h)</SelectItem>
-                    <SelectItem value="Medium">Medium (60-80 km/h)</SelectItem>
-                    <SelectItem value="Slow">Slow (&lt; 60 km/h)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div>
-                <Label htmlFor="batConnect">Bat Connect</Label>
-                <Select value={videoTags.batConnect} onValueChange={(value) => handleTagChange('batConnect', value)}>
-                  <SelectTrigger id="batConnect">
-                    <SelectValue placeholder="Select Bat Connect" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Middle">Middle</SelectItem>
-                    <SelectItem value="Edge">Edge</SelectItem>
-                    <SelectItem value="Bottom">Bottom</SelectItem>
-                    <SelectItem value="Missed">Missed</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            
-            <div className="mb-4">
-              <Label htmlFor="footwork">Footwork</Label>
-              <Select value={videoTags.footwork} onValueChange={(value) => handleTagChange('footwork', value)}>
-                <SelectTrigger id="footwork">
-                  <SelectValue placeholder="Select Footwork Quality" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Good">Good</SelectItem>
-                  <SelectItem value="Average">Average</SelectItem>
-                  <SelectItem value="Poor">Poor</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div className="flex justify-end space-x-2">
-              <Button variant="outline" onClick={() => setIsTaggingMode(false)}>Cancel</Button>
-              <Button onClick={handleSaveTags}>Save Tags</Button>
-            </div>
-          </div>
-        </div>
-      )}
-      
+    <div className="container mx-auto px-4 py-8">
       <div className="flex items-center mb-6">
         <Link href={`/players/${playerId}`}>
           <Button variant="ghost" className="mr-2 p-2 rounded-full hover:bg-neutral-200">
@@ -406,403 +327,440 @@ const PerformanceAssessment = () => {
             </svg>
           </Button>
         </Link>
-        <h2 className="text-2xl font-bold text-neutral-400">New Assessment</h2>
+        <h2 className="text-2xl font-bold text-neutral-400">New Performance Assessment</h2>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left Column - Player Info & Videos */}
-        <div className="lg:col-span-2">
-          <Card className="mb-6">
-            <CardContent className="p-6">
-              {isPlayerLoading ? (
-                <div className="flex items-center">
-                  <Skeleton className="w-16 h-16 rounded-full mr-4" />
-                  <div>
-                    <Skeleton className="h-6 w-32 mb-1" />
-                    <Skeleton className="h-4 w-48" />
-                  </div>
+      {player ? (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Left Column - Videos and Filters */}
+          <div className="md:col-span-1">
+            <Card className="mb-6">
+              <CardHeader>
+                <CardTitle className="text-xl">
+                  Player: {player.name}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-sm text-neutral-500 mb-4">
+                  <p><strong>Batch:</strong> {player.batch}</p>
+                  <p><strong>Age:</strong> {player.age || 'N/A'}</p>
+                  <p><strong>Dominant Hand:</strong> {player.dominantHand || 'N/A'}</p>
                 </div>
-              ) : (
-                player && (
-                  <div className="flex items-center">
-                    <div className="w-16 h-16 bg-neutral-200 rounded-full overflow-hidden mr-4">
-                      <img src={player.image} alt={player.name} className="w-full h-full object-cover" />
-                    </div>
-                    <div>
-                      <h3 className="font-bold text-xl">{player.name}</h3>
-                      <p className="text-neutral-300">{player.batch} - {new Date().toLocaleDateString()}</p>
-                    </div>
-                  </div>
-                )
-              )}
-            </CardContent>
-          </Card>
 
-          {/* Video Filters */}
-          <Card className="mb-6">
-            <CardHeader className="border-b border-neutral-200 p-4">
-              <CardTitle>Video Filters</CardTitle>
-            </CardHeader>
-            <CardContent className="p-4">
-              <div className="flex flex-wrap gap-2">
-                <div className="w-full md:w-auto">
-                  <Label className="block text-sm text-neutral-600 font-medium mb-1">Shot Type</Label>
-                  <Select value={shotTypeFilter} onValueChange={setShotTypeFilter}>
-                    <SelectTrigger className="w-full md:w-48">
-                      <SelectValue placeholder="All Shot Types" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="All Shot Types">All Shot Types</SelectItem>
-                      <SelectItem value="Cover Drive">Cover Drive</SelectItem>
-                      <SelectItem value="Straight Drive">Straight Drive</SelectItem>
-                      <SelectItem value="Pull Shot">Pull Shot</SelectItem>
-                      <SelectItem value="Cut Shot">Cut Shot</SelectItem>
-                      <SelectItem value="Defensive Block">Defensive Block</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="w-full md:w-auto">
-                  <Label className="block text-sm text-neutral-600 font-medium mb-1">Ball Speed</Label>
-                  <Select value={ballSpeedFilter} onValueChange={setBallSpeedFilter}>
-                    <SelectTrigger className="w-full md:w-48">
-                      <SelectValue placeholder="All Speeds" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="All Speeds">All Speeds</SelectItem>
-                      <SelectItem value="Fast">Fast (80+ km/h)</SelectItem>
-                      <SelectItem value="Medium">Medium (60-80 km/h)</SelectItem>
-                      <SelectItem value="Slow">Slow (&lt; 60 km/h)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="w-full md:w-auto">
-                  <Label className="block text-sm text-neutral-600 font-medium mb-1">Bat Connect</Label>
-                  <Select value={batConnectFilter} onValueChange={setBatConnectFilter}>
-                    <SelectTrigger className="w-full md:w-48">
-                      <SelectValue placeholder="All" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="All">All</SelectItem>
-                      <SelectItem value="Middle">Middle</SelectItem>
-                      <SelectItem value="Edge">Edge</SelectItem>
-                      <SelectItem value="Bottom">Bottom</SelectItem>
-                      <SelectItem value="Missed">Missed</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="w-full md:w-auto">
-                  <Label className="block text-sm text-neutral-600 font-medium mb-1">Footwork</Label>
-                  <Select value={footworkFilter} onValueChange={setFootworkFilter}>
-                    <SelectTrigger className="w-full md:w-48">
-                      <SelectValue placeholder="All" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="All">All</SelectItem>
-                      <SelectItem value="Good">Good</SelectItem>
-                      <SelectItem value="Average">Average</SelectItem>
-                      <SelectItem value="Poor">Poor</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Video Carousel */}
-          <Card className="mb-6">
-            <CardHeader className="border-b border-neutral-200 p-4">
-              <CardTitle>Latest Videos</CardTitle>
-            </CardHeader>
-            <CardContent className="p-4">
-              {isVideosLoading ? (
-                <div className="flex space-x-4">
-                  {[...Array(3)].map((_, i) => (
-                    <div key={i} className="flex-shrink-0 w-64">
-                      <Skeleton className="h-36 w-full rounded mb-2" />
-                      <Skeleton className="h-4 w-3/4 mb-1" />
-                      <Skeleton className="h-3 w-1/2" />
-                    </div>
-                  ))}
-                </div>
-              ) : videos && videos.length > 0 ? (
-                <div className="relative">
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="absolute left-0 top-1/2 transform -translate-y-1/2 z-10 bg-white/80 rounded-full p-1 shadow-md"
-                    onClick={() => moveCarousel('prev')}
-                    disabled={carouselPosition === 0}
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-left">
-                      <path d="m15 18-6-6 6-6"></path>
-                    </svg>
-                  </Button>
-                  <div className="overflow-hidden">
-                    <div 
-                      className="flex space-x-4 transition-transform duration-300" 
-                      style={{ transform: `translateX(${carouselPosition}px)` }}
-                    >
-                      {videos.map((video, index) => {
-                        // Determine badge color based on batConnect
-                        let badgeColor = "bg-neutral-500";
-                        if (video.batConnect === "Middle") badgeColor = "bg-green-500";
-                        else if (video.batConnect === "Edge") badgeColor = "bg-amber-500";
-                        else if (video.batConnect === "Missed") badgeColor = "bg-red-500";
-
-                        return (
-                          <div key={index} className="flex-shrink-0 w-64">
-                            <div className="h-36 w-full relative">
-                              <div className="relative w-full h-full">
-                                <VideoPlayer
-                                  videoUrl={video.url}
-                                  title={video.title}
-                                  className="w-full h-full object-cover rounded"
-                                  triggerClassName="w-full h-full flex items-center justify-center bg-neutral-200 rounded"
-                                />
-                                <Button 
-                                  size="sm"
-                                  className="absolute top-2 right-2 bg-primary/80 hover:bg-primary text-white p-1 rounded"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleVideoSelect(video);
-                                    setIsTaggingMode(true);
-                                  }}
-                                  title="Tag attributes in this video"
-                                >
-                                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
-                                    <line x1="7" y1="7" x2="7.01" y2="7"></line>
-                                  </svg>
-                                </Button>
-                              </div>
-                            </div>
-                            <div className="mt-2">
-                              <p className="font-bold text-sm">{video.shotType}</p>
-                              <p className="text-xs text-neutral-600 font-medium">Ball Speed: {video.ballSpeed}</p>
-                              <div className="flex items-center mt-1">
-                                <span className={`text-xs ${badgeColor} text-white px-2 py-0.5 rounded-full`}>
-                                  {video.batConnect}
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="absolute right-0 top-1/2 transform -translate-y-1/2 z-10 bg-white/80 rounded-full p-1 shadow-md"
-                    onClick={() => moveCarousel('next')}
-                    disabled={videos.length <= 3 || carouselPosition <= -((videos.length - 3) * 264)}
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-right">
-                      <path d="m9 18 6-6-6-6"></path>
-                    </svg>
-                  </Button>
-                </div>
-              ) : (
-                <div className="text-center py-8">
-                  <p className="text-neutral-400">No videos available for this player.</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Right Column - Assessment Form */}
-        <div className="lg:col-span-1">
-          <Card className="sticky top-6">
-            <CardHeader className="bg-primary text-white p-4">
-              <CardTitle>Performance Assessment</CardTitle>
-            </CardHeader>
-            <CardContent className="p-4">
-              <form onSubmit={(e) => { e.preventDefault(); handleSaveAssessment(); }}>
-                {/* Session Notes */}
-                <div className="mb-6 border-2 border-primary/10 rounded-lg p-4 bg-primary/5">
-                  <h3 className="text-lg font-bold mb-3 text-primary">Session Notes</h3>
+                <div className="mb-4">
+                  <Label htmlFor="session-notes" className="block mb-2">Session Notes</Label>
                   <Textarea 
-                    className="w-full px-3 py-2 border border-neutral-200 rounded h-32" 
-                    placeholder="Enter overall notes for this assessment session..."
+                    id="session-notes"
+                    className="w-full px-3 py-2 border border-neutral-200 rounded h-24"
+                    placeholder="Enter overall session notes, observations, and feedback..."
                     value={sessionNotes}
                     onChange={(e) => setSessionNotes(e.target.value)}
                   />
                 </div>
+              </CardContent>
+            </Card>
 
-
-                {/* General Performance Areas */}
-                <div className="mb-6 border-2 border-secondary/10 rounded-lg p-4 bg-secondary/5">
-                  <h3 className="text-lg font-bold mb-3 text-secondary">General Performance Areas</h3>
-
-                  {problemAreas.map((area, index) => (
-                    <div key={index} className="border border-neutral-200 rounded p-3 mb-3">
-                      <div className="flex justify-between items-center mb-2">
-                        <Label className="font-medium">
-                          {getProblemAreaName(area.areaType)}
-                        </Label>
-                        <StarRating 
-                          initialRating={area.rating}
-                          onChange={(rating) => handleProblemAreaChange(index, 'rating', rating)}
-                        />
-                      </div>
-                      <Textarea 
-                        className="w-full px-3 py-2 border border-neutral-200 rounded mt-2" 
-                        placeholder={`Notes for ${getProblemAreaName(area.areaType)}...`}
-                        value={area.notes}
-                        onChange={(e) => handleProblemAreaChange(index, 'notes', e.target.value)}
-                        rows={2}
-                      />
+            <Card className="mb-6">
+              <CardHeader>
+                <CardTitle className="text-lg">Video Library</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2 mb-4">
+                  <div className="grid grid-cols-2 gap-2">
+                    {/* Shot Type Filter */}
+                    <div className="mb-2">
+                      <Label htmlFor="shotType" className="block mb-1 text-xs">Shot Type</Label>
+                      <select
+                        id="shotType"
+                        className="w-full px-2 py-1 text-sm border border-neutral-200 rounded"
+                        value={shotTypeFilter}
+                        onChange={(e) => setShotTypeFilter(e.target.value)}
+                      >
+                        <option value="All">All</option>
+                        <option value="Cover Drive">Cover Drive</option>
+                        <option value="Straight Drive">Straight Drive</option>
+                        <option value="Pull Shot">Pull Shot</option>
+                        <option value="Cut Shot">Cut Shot</option>
+                      </select>
                     </div>
-                  ))}
-
-                  {/* Add Performance Area */}
-                  <div className="mt-3">
-                    <Button 
-                      type="button" 
-                      variant="ghost" 
-                      className="flex items-center text-primary font-medium"
-                      onClick={addProblemArea}
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" className="mr-1" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <circle cx="12" cy="12" r="10"></circle>
-                        <path d="M12 8v8"></path>
-                        <path d="M8 12h8"></path>
-                      </svg>
-                      <span>Add Performance Area</span>
-                    </Button>
+                    
+                    {/* Ball Length Filter */}
+                    <div className="mb-2">
+                      <Label htmlFor="ballLength" className="block mb-1 text-xs">Ball Length</Label>
+                      <select
+                        id="ballLength"
+                        className="w-full px-2 py-1 text-sm border border-neutral-200 rounded"
+                        value={ballLengthFilter}
+                        onChange={(e) => setBallLengthFilter(e.target.value)}
+                      >
+                        <option value="All">All</option>
+                        <option value="Full">Full</option>
+                        <option value="Good">Good</option>
+                        <option value="Short">Short</option>
+                        <option value="Yorker">Yorker</option>
+                      </select>
+                    </div>
+                    
+                    {/* Ball Speed Filter */}
+                    <div className="mb-2">
+                      <Label htmlFor="ballSpeed" className="block mb-1 text-xs">Ball Speed</Label>
+                      <select
+                        id="ballSpeed"
+                        className="w-full px-2 py-1 text-sm border border-neutral-200 rounded"
+                        value={ballSpeedFilter}
+                        onChange={(e) => setBallSpeedFilter(e.target.value)}
+                      >
+                        <option value="All">All</option>
+                        <option value="Fast">Fast</option>
+                        <option value="Medium">Medium</option>
+                        <option value="Slow">Slow</option>
+                      </select>
+                    </div>
+                    
+                    {/* Bat Connect Filter */}
+                    <div className="mb-2">
+                      <Label htmlFor="batConnect" className="block mb-1 text-xs">Bat Connect</Label>
+                      <select
+                        id="batConnect"
+                        className="w-full px-2 py-1 text-sm border border-neutral-200 rounded"
+                        value={batConnectFilter}
+                        onChange={(e) => setBatConnectFilter(e.target.value)}
+                      >
+                        <option value="All">All</option>
+                        <option value="Middle">Middle</option>
+                        <option value="Edge">Edge</option>
+                        <option value="Bottom">Bottom</option>
+                        <option value="Missed">Missed</option>
+                      </select>
+                    </div>
                   </div>
                 </div>
+                
+                {/* Video List */}
+                <div className="space-y-2">
+                  {videos && videos.length > 0 ? (
+                    videos.map((video) => (
+                      <div 
+                        key={video.id} 
+                        className={`p-2 border rounded cursor-pointer transition ${selectedVideo?.id === video.id ? 'border-primary bg-primary/5' : 'border-neutral-200 hover:bg-neutral-100'}`}
+                        onClick={() => handleVideoSelect(video)}
+                      >
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <h5 className="font-medium">{video.title}</h5>
+                            <p className="text-xs text-neutral-500">{new Date(video.recordedDate).toLocaleDateString()}</p>
+                            <div className="flex flex-wrap mt-1 gap-1">
+                              {video.shotType && <span className="text-xs bg-blue-100 text-blue-800 px-1 rounded">{video.shotType}</span>}
+                              {video.ballLength && <span className="text-xs bg-green-100 text-green-800 px-1 rounded">{video.ballLength}</span>}
+                              {video.ballSpeed && <span className="text-xs bg-yellow-100 text-yellow-800 px-1 rounded">{video.ballSpeed}</span>}
+                            </div>
+                          </div>
+                          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-play">
+                            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                          </svg>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-neutral-500 text-center py-4">No videos found matching filters</p>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
 
-                {/* Shot Specific Performance Areas */}
-                <div className="mb-6 border-2 border-amber-500/20 rounded-lg p-4 bg-amber-500/5">
-                  <h3 className="text-lg font-bold mb-3 text-amber-600">Shot Specific Performance Areas</h3>
+          {/* Right Column - Assessment Form */}
+          <div className="md:col-span-2">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-xl">Performance Assessment</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {/* Video Player */}
+                {selectedVideo ? (
+                  <div className="mb-6">
+                    <div className="aspect-w-16 aspect-h-9 mb-2">
+                      <VideoPlayer 
+                        videoUrl={selectedVideo.url} 
+                        title={selectedVideo.title} 
+                        className="w-full"
+                      />
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <h4 className="font-bold">{selectedVideo.title}</h4>
+                      {isTaggingMode ? (
+                        <div className="flex space-x-2">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => setIsTaggingMode(false)}
+                          >
+                            Cancel
+                          </Button>
+                          <Button 
+                            size="sm"
+                            onClick={saveVideoTags}
+                          >
+                            Save Tags
+                          </Button>
+                        </div>
+                      ) : (
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={startTaggingMode}
+                        >
+                          Edit Tags
+                        </Button>
+                      )}
+                    </div>
+                    
+                    {isTaggingMode && (
+                      <div className="grid grid-cols-2 gap-3 mt-3">
+                        <div>
+                          <Label htmlFor="tag-shotType" className="block mb-1 text-xs">Shot Type</Label>
+                          <select
+                            id="tag-shotType"
+                            className="w-full px-2 py-1 text-sm border border-neutral-200 rounded"
+                            value={videoTags.shotType}
+                            onChange={(e) => updateVideoTag('shotType', e.target.value)}
+                          >
+                            <option value="">-- Select --</option>
+                            <option value="Cover Drive">Cover Drive</option>
+                            <option value="Straight Drive">Straight Drive</option>
+                            <option value="Pull Shot">Pull Shot</option>
+                            <option value="Cut Shot">Cut Shot</option>
+                            <option value="Sweep Shot">Sweep Shot</option>
+                          </select>
+                        </div>
+                        <div>
+                          <Label htmlFor="tag-ballLength" className="block mb-1 text-xs">Ball Length</Label>
+                          <select
+                            id="tag-ballLength"
+                            className="w-full px-2 py-1 text-sm border border-neutral-200 rounded"
+                            value={videoTags.ballLength}
+                            onChange={(e) => updateVideoTag('ballLength', e.target.value)}
+                          >
+                            <option value="">-- Select --</option>
+                            <option value="Full">Full</option>
+                            <option value="Good">Good</option>
+                            <option value="Short">Short</option>
+                            <option value="Yorker">Yorker</option>
+                          </select>
+                        </div>
+                        <div>
+                          <Label htmlFor="tag-ballSpeed" className="block mb-1 text-xs">Ball Speed</Label>
+                          <select
+                            id="tag-ballSpeed"
+                            className="w-full px-2 py-1 text-sm border border-neutral-200 rounded"
+                            value={videoTags.ballSpeed}
+                            onChange={(e) => updateVideoTag('ballSpeed', e.target.value)}
+                          >
+                            <option value="">-- Select --</option>
+                            <option value="Fast">Fast</option>
+                            <option value="Medium">Medium</option>
+                            <option value="Slow">Slow</option>
+                          </select>
+                        </div>
+                        <div>
+                          <Label htmlFor="tag-batConnect" className="block mb-1 text-xs">Bat Connect</Label>
+                          <select
+                            id="tag-batConnect"
+                            className="w-full px-2 py-1 text-sm border border-neutral-200 rounded"
+                            value={videoTags.batConnect}
+                            onChange={(e) => updateVideoTag('batConnect', e.target.value)}
+                          >
+                            <option value="">-- Select --</option>
+                            <option value="Middle">Middle</option>
+                            <option value="Edge">Edge</option>
+                            <option value="Bottom">Bottom</option>
+                            <option value="Missed">Missed</option>
+                          </select>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="mb-6 flex items-center justify-center border border-dashed border-neutral-300 rounded-lg h-48 bg-neutral-50">
+                    <div className="text-center">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 mx-auto text-neutral-400 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                      </svg>
+                      <p className="text-neutral-500">Select a video from the library to analyze</p>
+                    </div>
+                  </div>
+                )}
+
+                <div className="grid grid-cols-1 gap-6">
+                  {/* General Performance Areas */}
+                  <div className="mb-6 border-2 border-secondary/10 rounded-lg p-4 bg-secondary/5">
+                    <h3 className="text-lg font-bold mb-3 text-secondary">General Performance Areas</h3>
+
+                    {problemAreas.map((area, index) => (
+                      <div key={index} className="border border-neutral-200 rounded p-3 mb-3">
+                        <div className="flex justify-between items-center mb-2">
+                          <Label className="font-medium">
+                            {getProblemAreaName(area.areaType)}
+                          </Label>
+                          <StarRating 
+                            initialRating={area.rating}
+                            onChange={(rating) => handleProblemAreaChange(index, 'rating', rating)}
+                          />
+                        </div>
+                        <Textarea 
+                          className="w-full px-3 py-2 border border-neutral-200 rounded mt-2" 
+                          placeholder={`Notes for ${getProblemAreaName(area.areaType)}...`}
+                          value={area.notes}
+                          onChange={(e) => handleProblemAreaChange(index, 'notes', e.target.value)}
+                          rows={2}
+                        />
+                      </div>
+                    ))}
+
+                    {/* Add Performance Area */}
+                    <div className="mt-3">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={addProblemArea}
+                        className="w-full"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-plus mr-1">
+                          <path d="M5 12h14"></path>
+                          <path d="M12 5v14"></path>
+                        </svg>
+                        <span>Add Performance Area</span>
+                      </Button>
+                    </div>
+                  </div>
                   
-                  {/* Saved Shot Type Assessments */}
-                  {savedShotAssessments.length > 0 && (
-                    <div className="mb-6">
-                      <h4 className="font-medium mb-3">Saved Shot Assessments</h4>
-                      <div className="space-y-2">
-                        {savedShotAssessments.map((assessment, idx) => (
-                          <div key={idx} className="border border-neutral-300 rounded p-3 bg-neutral-50">
+                  {/* Shot Specific Assessments */}
+                  <div className="border-2 border-amber-500/20 rounded-lg p-4 bg-amber-500/5">
+                    <h3 className="text-lg font-bold mb-3 text-amber-600">Shot Specific Performance Areas</h3>
+                    
+                    {/* Saved Shot Assessments */}
+                    {savedShotAssessments.length > 0 && (
+                      <div className="mb-4">
+                        <h4 className="font-medium mb-2">Saved Shot Assessments</h4>
+                        {savedShotAssessments.map((assessment, index) => (
+                          <div key={index} className="border border-neutral-200 rounded p-3 mb-2">
                             <div className="flex justify-between items-center">
-                              <h5 className="font-medium text-primary">{assessment.shotType}</h5>
-                              <Button 
-                                variant="ghost" 
-                                size="sm" 
-                                className="text-xs"
-                                onClick={() => {
-                                  // Remove this assessment from saved list
-                                  setSavedShotAssessments(savedShotAssessments.filter((_, i) => i !== idx));
-                                }}
-                              >
-                                Remove
-                              </Button>
+                              <h5 className="font-bold">{assessment.shotType}</h5>
+                              <div className="flex items-center">
+                                <span className="mr-2 text-sm">Rating:</span>
+                                <StarRating 
+                                  initialRating={assessment.rating}
+                                  readOnly={true}
+                                />
+                              </div>
                             </div>
                             {assessment.notes && (
-                              <p className="text-sm text-gray-600 mt-1 italic">"{assessment.notes}"</p>
+                              <p className="text-sm text-neutral-600 mt-1">{assessment.notes}</p>
                             )}
+                            <div className="mt-2 text-xs text-neutral-500">
+                              {assessment.areas.filter(a => a.rating > 0).length} technical areas evaluated
+                              <div className="border-b border-dashed border-gray-300 my-4"></div>
+                            </div>
                           </div>
                         ))}
                       </div>
-                      <div className="border-b border-dashed border-gray-300 my-4"></div>
-                    </div>
-                  )}
-                  
-                  {/* Current Shot Type Assessment Form */}
-                  <div className="mb-4">
-                    <div className="flex justify-between items-center mb-2">
-                      <Label htmlFor="shotType" className="block">Shot Type</Label>
-                      <div className="flex items-center">
-                        <Label className="mr-2 text-sm">Overall Rating:</Label>
-                        <StarRating 
-                          initialRating={shotTypeRating}
-                          onChange={(rating) => setShotTypeRating(rating)}
-                        />
-                      </div>
-                    </div>
-                    <select
-                      id="shotType"
-                      className="w-full px-3 py-2 border border-neutral-200 rounded"
-                      value={selectedShotType}
-                      onChange={(e) => setSelectedShotType(e.target.value)}
-                    >
-                      <option value="Cover Drive">Cover Drive</option>
-                      <option value="Straight Drive">Straight Drive</option>
-                      <option value="Pull Shot">Pull Shot</option>
-                      <option value="Cut Shot">Cut Shot</option>
-                      <option value="Sweep Shot">Sweep Shot</option>
-                    </select>
-                  </div>
-                  
-                  <div className="mb-4">
-                    <Label htmlFor="shot-notes" className="block mb-2">Shot-Specific Notes</Label>
-                    <Textarea 
-                      id="shot-notes"
-                      className="w-full px-3 py-2 border border-neutral-200 rounded h-24"
-                      placeholder={`Enter overall notes about ${selectedShotType} technique...`}
-                      value={shotTypeNotes}
-                      onChange={(e) => setShotTypeNotes(e.target.value)}
-                    />
-                  </div>
-                  
-                  <div className="space-y-4">
-                    {shotSpecificAreas.map((area, index) => (
-                      <div key={area.id} className="border border-neutral-200 rounded p-3">
-                        <div className="flex justify-between items-center">
-                          <Label className="font-medium">
-                            {area.name}
-                          </Label>
-                          <div className="flex space-x-2">
-                            <button
-                              type="button"
-                              className={`px-3 py-1 rounded text-sm font-medium ${area.rating === 1 ? 'bg-red-500 text-white' : 'bg-gray-200 text-gray-700'}`}
-                              onClick={() => {
-                                const updatedAreas = [...shotSpecificAreas];
-                                updatedAreas[index].rating = area.rating === 1 ? 0 : 1;
-                                setShotSpecificAreas(updatedAreas);
-                              }}
-                            >
-                              Needs Work
-                            </button>
-                          </div>
+                    )}
+                    
+                    {/* Current Shot Type Assessment Form */}
+                    <div className="mb-4">
+                      <div className="flex justify-between items-center mb-2">
+                        <Label htmlFor="shotType" className="block">Shot Type</Label>
+                        <div className="flex items-center">
+                          <Label className="mr-2 text-sm">Overall Rating:</Label>
+                          <StarRating 
+                            initialRating={shotTypeRating}
+                            onChange={(rating) => setShotTypeRating(rating)}
+                          />
                         </div>
                       </div>
-                    ))}
-                  </div>
-                  
-                  <div className="mt-4">
-                    <Button 
-                      type="button"
-                      variant="secondary"
-                      className="w-full"
-                      onClick={addShotTypeAssessment}
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" className="mr-1" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <circle cx="12" cy="12" r="10"></circle>
-                        <path d="M12 8v8"></path>
-                        <path d="M8 12h8"></path>
-                      </svg>
-                      Add Another Shot Type Assessment
-                    </Button>
+                      <select
+                        id="shotType"
+                        className="w-full px-3 py-2 border border-neutral-200 rounded"
+                        value={selectedShotType}
+                        onChange={(e) => setSelectedShotType(e.target.value)}
+                      >
+                        <option value="Cover Drive">Cover Drive</option>
+                        <option value="Straight Drive">Straight Drive</option>
+                        <option value="Pull Shot">Pull Shot</option>
+                        <option value="Cut Shot">Cut Shot</option>
+                        <option value="Sweep Shot">Sweep Shot</option>
+                      </select>
+                    </div>
+                    
+                    <div className="mb-4">
+                      <Label htmlFor="shot-notes" className="block mb-2">Shot-Specific Notes</Label>
+                      <Textarea 
+                        id="shot-notes"
+                        className="w-full px-3 py-2 border border-neutral-200 rounded h-24"
+                        placeholder={`Enter overall notes about ${selectedShotType} technique...`}
+                        value={shotTypeNotes}
+                        onChange={(e) => setShotTypeNotes(e.target.value)}
+                      />
+                    </div>
+                    
+                    <div className="space-y-4">
+                      {shotSpecificAreas.map((area, index) => (
+                        <div key={area.id} className="border border-neutral-200 rounded p-3">
+                          <div className="flex justify-between items-center">
+                            <Label className="font-medium">
+                              {area.name}
+                            </Label>
+                            <div className="flex space-x-2">
+                              <button
+                                type="button"
+                                className={`px-3 py-1 rounded text-sm font-medium ${area.rating === 1 ? 'bg-red-500 text-white' : 'bg-gray-200 text-gray-700'}`}
+                                onClick={() => {
+                                  const updatedAreas = [...shotSpecificAreas];
+                                  updatedAreas[index].rating = area.rating === 1 ? 0 : 1;
+                                  setShotSpecificAreas(updatedAreas);
+                                }}
+                              >
+                                Needs Work
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    
+                    <div className="mt-4">
+                      <Button 
+                        onClick={addShotTypeAssessment}
+                        className="w-full"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-plus mr-1">
+                          <path d="M5 12h14"></path>
+                          <path d="M12 5v14"></path>
+                        </svg>
+                        <span>Add Shot Assessment</span>
+                      </Button>
+                    </div>
                   </div>
                 </div>
-
-                {/* Submit Button */}
-                <div className="mt-6">
+                
+                <div className="mt-6 flex justify-end">
                   <Button 
-                    type="submit"
-                    className="w-full bg-secondary text-white font-bold py-3 px-4 rounded"
-                    disabled={isPending}
+                    onClick={handleSaveAssessment}
+                    disabled={createAssessment.isPending}
+                    className="bg-primary text-white px-4 py-2 rounded-lg"
                   >
-                    {isPending ? 'Saving...' : 'Save Assessment'}
+                    {createAssessment.isPending ? "Saving..." : "Save Assessment"}
                   </Button>
                 </div>
-              </form>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </div>
         </div>
-      </div>
+      ) : (
+        <div className="flex justify-center items-center h-64">
+          <p className="text-neutral-500">Player not found</p>
+        </div>
+      )}
     </div>
   );
 };
