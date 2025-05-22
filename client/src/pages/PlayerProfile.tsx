@@ -373,7 +373,7 @@ const PlayerProfile = () => {
                           <p className="font-mono font-bold">87%</p>
                         </div>
                         <div className="bg-primary/10 p-3 rounded">
-                          <p className="text-xs text-neutral-600 font-medium">Shot Selection Accuracy</p>
+                          <p className="text-xs text-neutral-600 font-medium">Bat Swing</p>
                           <p className="font-mono font-bold">82%</p>
                         </div>
                         <div className="bg-primary/10 p-3 rounded">
