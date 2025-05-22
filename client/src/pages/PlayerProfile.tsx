@@ -26,9 +26,10 @@ const AssessmentHistoryCard = ({ assessment }: { assessment: PerformanceAssessme
   });
 
   // Group shot-specific metrics
-  const shotTypeMetrics = metrics.filter(metric => 
-    !['reaction_time', 'bat_connect', 'bat_swing', 'foot_movement'].includes(metric.metricType)
-  );
+  const shotTypeMetrics = metrics.filter(metric => {
+    // Exclude general performance metrics and also exclude shot_selection and footwork
+    return !['reaction_time', 'bat_connect', 'bat_swing', 'foot_movement', 'shot_selection', 'footwork'].includes(metric.metricType);
+  });
 
   // Group general performance metrics
   const generalPerformanceMetrics = metrics.filter(metric => 
@@ -47,7 +48,7 @@ const AssessmentHistoryCard = ({ assessment }: { assessment: PerformanceAssessme
       groups[mainType] = {
         name: mainType.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
         rating: mainMetric ? mainMetric.rating : 0,
-        notes: mainMetric ? mainMetric.notes : '',
+        notes: mainMetric && mainMetric.notes ? mainMetric.notes : '',
         areas: []
       };
     }
@@ -61,7 +62,7 @@ const AssessmentHistoryCard = ({ assessment }: { assessment: PerformanceAssessme
         id: metric.id.toString(),
         name: areaName.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
         rating: metric.rating,
-        notes: metric.notes
+        notes: metric.notes || ''
       });
     }
     
@@ -100,7 +101,7 @@ const AssessmentHistoryCard = ({ assessment }: { assessment: PerformanceAssessme
                   
                   // Find matching problem area for additional notes
                   const matchingProblemArea = problemAreas.find(
-                    pa => pa.type === metric.metricType
+                    pa => pa.areaType === metric.metricType
                   );
                   
                   return (

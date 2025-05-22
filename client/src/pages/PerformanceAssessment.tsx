@@ -56,8 +56,8 @@ const PerformanceAssessment = () => {
   const [sessionNotes, setSessionNotes] = useState("");
   const [focusAreas, setFocusAreas] = useState<string[]>([]);
   const [problemAreas, setProblemAreas] = useState<ProblemArea[]>([
-    { type: "bat_connect", rating: 0, notes: "" },
-    { type: "foot_movement", rating: 0, notes: "" }
+    { areaType: "bat_connect", rating: 0, notes: "" },
+    { areaType: "foot_movement", rating: 0, notes: "" }
   ]);
   
   // Shot Specific Performance Areas
