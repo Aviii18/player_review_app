@@ -630,7 +630,7 @@ const PerformanceAssessment = () => {
 
                   {problemAreas.map((area, index) => (
                     <div key={index} className="border border-neutral-200 rounded p-3 mb-3">
-                      <div className="flex justify-between items-center">
+                      <div className="flex justify-between items-center mb-2">
                         <Label className="font-medium">
                           {getProblemAreaName(area.type)}
                         </Label>
@@ -639,6 +639,13 @@ const PerformanceAssessment = () => {
                           onChange={(rating) => handleProblemAreaChange(index, 'rating', rating)}
                         />
                       </div>
+                      <Textarea 
+                        className="w-full px-3 py-2 border border-neutral-200 rounded mt-2" 
+                        placeholder={`Notes for ${getProblemAreaName(area.type)}...`}
+                        value={area.notes}
+                        onChange={(e) => handleProblemAreaChange(index, 'notes', e.target.value)}
+                        rows={2}
+                      />
                     </div>
                   ))}
 
