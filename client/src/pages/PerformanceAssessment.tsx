@@ -52,6 +52,7 @@ const PerformanceAssessment = () => {
   const [shotTypeFilter, setShotTypeFilter] = useState("All Shot Types");
   const [ballSpeedFilter, setBallSpeedFilter] = useState("All Speeds");
   const [batConnectFilter, setBatConnectFilter] = useState("All");
+  const [footworkFilter, setFootworkFilter] = useState("All");
   const [sessionNotes, setSessionNotes] = useState("");
   const [focusAreas, setFocusAreas] = useState<string[]>([]);
   const [problemAreas, setProblemAreas] = useState<ProblemArea[]>([
@@ -110,7 +111,7 @@ const PerformanceAssessment = () => {
   const { data: videos, isLoading: isVideosLoading } = useQuery<Video[]>({
     queryKey: [
       `/api/players/${playerId}/videos`, 
-      { shotType: shotTypeFilter, ballSpeed: ballSpeedFilter, batConnect: batConnectFilter }
+      { shotType: shotTypeFilter, ballSpeed: ballSpeedFilter, batConnect: batConnectFilter, footwork: footworkFilter }
     ],
     enabled: !isNaN(playerId)
   });
@@ -454,6 +455,20 @@ const PerformanceAssessment = () => {
                       <SelectItem value="Edge">Edge</SelectItem>
                       <SelectItem value="Bottom">Bottom</SelectItem>
                       <SelectItem value="Missed">Missed</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="w-full md:w-auto">
+                  <Label className="block text-sm text-neutral-600 font-medium mb-1">Footwork</Label>
+                  <Select value={footworkFilter} onValueChange={setFootworkFilter}>
+                    <SelectTrigger className="w-full md:w-48">
+                      <SelectValue placeholder="All" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="All">All</SelectItem>
+                      <SelectItem value="Good">Good</SelectItem>
+                      <SelectItem value="Average">Average</SelectItem>
+                      <SelectItem value="Poor">Poor</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
