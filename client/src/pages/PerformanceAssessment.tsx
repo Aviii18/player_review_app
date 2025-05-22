@@ -127,21 +127,6 @@ const PerformanceAssessment = () => {
       batConnectFilter,
       footworkFilter
     ],
-    queryFn: async ({ queryKey }) => {
-      const [_path, shotType, ballLength, ballSpeed, batConnect, footwork] = queryKey as [string, string, string, string, string, string];
-      
-      const params = new URLSearchParams();
-      if (shotType !== "All") params.append("shotType", shotType);
-      if (ballLength !== "All") params.append("ballLength", ballLength);
-      if (ballSpeed !== "All") params.append("ballSpeed", ballSpeed);
-      if (batConnect !== "All") params.append("batConnect", batConnect);
-      if (footwork !== "All") params.append("footwork", footwork);
-      
-      const queryString = params.toString();
-      const url = queryString ? `${_path}?${queryString}` : _path;
-      
-      return apiRequest('GET', url);
-    },
     enabled: !isNaN(playerId)
   });
 
@@ -160,13 +145,11 @@ const PerformanceAssessment = () => {
         isLatest: true
       });
       
-      const assessment = assessmentResponse;
-      
       // Create problem areas for this assessment
       const validProblemAreas = problemAreas.filter(pa => pa.rating > 0);
       
       for (const pa of validProblemAreas) {
-        await apiRequest('POST', `/api/assessments/${assessment.id}/problem-areas`, {
+        await apiRequest('POST', `/api/assessments/${assessmentResponse.id}/problem-areas`, {
           areaType: pa.areaType,
           rating: pa.rating,
           notes: pa.notes
@@ -176,7 +159,7 @@ const PerformanceAssessment = () => {
       // Save shot-specific assessments as metrics
       for (const shotAssessment of savedShotAssessments) {
         // Save the overall shot type assessment
-        await apiRequest('POST', `/api/assessments/${assessment.id}/metrics`, {
+        await apiRequest('POST', `/api/assessments/${assessmentResponse.id}/metrics`, {
           metricType: shotAssessment.shotType.toLowerCase().replace(' ', '_'),
           rating: shotAssessment.rating, // Use the overall shot type rating
           value: shotAssessment.areas.filter(a => a.rating > 0).length + ' areas evaluated',
@@ -187,7 +170,7 @@ const PerformanceAssessment = () => {
         // Save each specific technical area within the shot
         for (const area of shotAssessment.areas) {
           // We need to save all areas for proper display later
-          await apiRequest('POST', `/api/assessments/${assessment.id}/metrics`, {
+          await apiRequest('POST', `/api/assessments/${assessmentResponse.id}/metrics`, {
             metricType: `${shotAssessment.shotType.toLowerCase().replace(' ', '_')}_${area.id}`,
             rating: area.rating,
             value: area.rating === 1 ? 'Needs Work' : 'Good',
@@ -197,7 +180,7 @@ const PerformanceAssessment = () => {
         }
       }
       
-      return assessment;
+      return assessmentResponse;
     },
     onSuccess: () => {
       toast({
@@ -346,8 +329,6 @@ const PerformanceAssessment = () => {
                   <p><strong>Age:</strong> {player.age || 'N/A'}</p>
                   <p><strong>Dominant Hand:</strong> {player.dominantHand || 'N/A'}</p>
                 </div>
-
-
               </CardContent>
             </Card>
 
@@ -467,7 +448,7 @@ const PerformanceAssessment = () => {
                 <CardTitle className="text-xl">Performance Assessment</CardTitle>
               </CardHeader>
               <CardContent>
-                {/* Video Carousel */}
+                {/* Training Videos Carousel */}
                 <div className="mb-6">
                   <h4 className="font-medium mb-3">Training Videos</h4>
                   <div className="grid grid-cols-2 gap-4 mb-4">
@@ -514,6 +495,7 @@ const PerformanceAssessment = () => {
                   </div>
                 </div>
                 
+                {/* Session Notes */}
                 <div className="mb-6">
                   <Label htmlFor="session-notes" className="block mb-2 font-medium">Session Notes</Label>
                   <Textarea 
@@ -524,7 +506,7 @@ const PerformanceAssessment = () => {
                     onChange={(e) => setSessionNotes(e.target.value)}
                   />
                 </div>
-                
+
                 {/* Video Player */}
                 {selectedVideo ? (
                   <div className="mb-6">
