@@ -27,8 +27,15 @@ const AssessmentHistoryCard = ({ assessment }: { assessment: PerformanceAssessme
 
   // Group shot-specific metrics
   const shotTypeMetrics = metrics.filter(metric => {
-    // Exclude general performance metrics and also exclude shot_selection and footwork
-    return !['reaction_time', 'bat_connect', 'bat_swing', 'foot_movement', 'shot_selection', 'footwork'].includes(metric.metricType);
+    // Only include shot-specific metrics that match our expected pattern (e.g., "cover_drive", "pull_shot")
+    // Exclude general performance metrics and other non-shot metrics
+    const isGeneralMetric = ['reaction_time', 'bat_connect', 'bat_swing', 'foot_movement', 'shot_selection', 'footwork'].includes(metric.metricType);
+    
+    // Check if it's a shot type metric - these usually have underscores but aren't general metrics
+    const isShotTypeMetric = metric.metricType.includes('_') && !isGeneralMetric;
+    
+    // Only include shot type metrics
+    return isShotTypeMetric;
   });
 
   // Group general performance metrics

@@ -15,8 +15,9 @@ import VideoPlayer from "@/components/VideoPlayer";
 import type { Player, Video } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
 
-interface ProblemArea {
-  type: string;
+// Local interface for problem areas (matching backend schema)
+interface ProblemAreaInput {
+  areaType: string;
   rating: number;
   notes: string;
 }
@@ -55,7 +56,7 @@ const PerformanceAssessment = () => {
   const [footworkFilter, setFootworkFilter] = useState("All");
   const [sessionNotes, setSessionNotes] = useState("");
   const [focusAreas, setFocusAreas] = useState<string[]>([]);
-  const [problemAreas, setProblemAreas] = useState<ProblemArea[]>([
+  const [problemAreas, setProblemAreas] = useState<ProblemAreaInput[]>([
     { areaType: "bat_connect", rating: 0, notes: "" },
     { areaType: "foot_movement", rating: 0, notes: "" }
   ]);
@@ -145,7 +146,7 @@ const PerformanceAssessment = () => {
       
       for (const pa of validProblemAreas) {
         await apiRequest('POST', `/api/assessments/${assessment.id}/problem-areas`, {
-          areaType: pa.type,
+          areaType: pa.areaType,
           rating: pa.rating,
           notes: pa.notes
         });
