@@ -5,13 +5,197 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import RatingBar from "@/components/RatingBar";
 import VideoPlayer from "@/components/VideoPlayer";
 import NotesList from "@/components/NotesList";
 import PerformanceChart from "@/components/PerformanceChart";
-import type { Player, PerformanceAssessment, PerformanceMetric } from "@shared/schema";
+import StarRating from "@/components/StarRating";
+import type { Player, PerformanceAssessment, PerformanceMetric, ProblemArea } from "@shared/schema";
 
+// Component to display an assessment history card
+const AssessmentHistoryCard = ({ assessment }: { assessment: PerformanceAssessment }) => {
+  const { data: metrics = [] } = useQuery<PerformanceMetric[]>({
+    queryKey: [`/api/assessments/${assessment.id}/metrics`],
+    enabled: assessment.id !== undefined
+  });
 
+  const { data: problemAreas = [] } = useQuery<ProblemArea[]>({
+    queryKey: [`/api/assessments/${assessment.id}/problem-areas`],
+    enabled: assessment.id !== undefined
+  });
+
+  // Group shot-specific metrics
+  const shotTypeMetrics = metrics.filter(metric => 
+    !['reaction_time', 'bat_connect', 'bat_swing', 'foot_movement'].includes(metric.metricType)
+  );
+
+  // Group general performance metrics
+  const generalPerformanceMetrics = metrics.filter(metric => 
+    ['reaction_time', 'bat_connect', 'bat_swing', 'foot_movement'].includes(metric.metricType)
+  );
+
+  // Group technical areas by shot type
+  const shotTypeGroups = shotTypeMetrics.reduce((groups, metric) => {
+    // Extract the main shot type from metrics (e.g., "cover_drive_hands_grip" → "cover_drive")
+    const mainType = metric.metricType.split('_').slice(0, 2).join('_');
+    
+    if (!groups[mainType]) {
+      // Find the main shot type metric
+      const mainMetric = metrics.find(m => m.metricType === mainType);
+      
+      groups[mainType] = {
+        name: mainType.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
+        rating: mainMetric ? mainMetric.rating : 0,
+        notes: mainMetric ? mainMetric.notes : '',
+        areas: []
+      };
+    }
+    
+    // Only add detailed technical areas, not the main shot type metric
+    if (metric.metricType !== mainType) {
+      // Get the specific area name (e.g., "cover_drive_hands_grip" → "hands_grip")
+      const areaName = metric.metricType.split('_').slice(2).join('_');
+      
+      groups[mainType].areas.push({
+        id: metric.id.toString(),
+        name: areaName.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
+        rating: metric.rating,
+        notes: metric.notes
+      });
+    }
+    
+    return groups;
+  }, {} as Record<string, { name: string, rating: number, notes: string, areas: { id: string, name: string, rating: number, notes: string }[] }>);
+
+  return (
+    <Card className="mb-6">
+      <div className="bg-primary text-white px-6 py-3 flex justify-between items-center rounded-t-lg">
+        <h4 className="font-bold">
+          Week of {format(new Date(assessment.weekStart), "MMMM d")} - {format(new Date(assessment.weekEnd), "MMMM d, yyyy")}
+        </h4>
+        {assessment.isLatest && (
+          <span className="text-sm bg-white text-primary font-bold px-2 py-1 rounded">Most Recent</span>
+        )}
+      </div>
+      
+      <CardContent className="p-6">
+        <Tabs defaultValue="general" className="w-full">
+          <TabsList className="mb-4">
+            <TabsTrigger value="general">General Performance Areas</TabsTrigger>
+            <TabsTrigger value="shots">Shot Specific Areas</TabsTrigger>
+            <TabsTrigger value="session">Session Notes</TabsTrigger>
+          </TabsList>
+          
+          {/* General Performance Areas Tab */}
+          <TabsContent value="general">
+            <div className="border-2 border-secondary/10 rounded-lg p-4 bg-secondary/5">
+              <h3 className="text-lg font-bold mb-3 text-secondary">General Performance Areas</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {generalPerformanceMetrics.map((metric) => {
+                  const metricDisplayName = metric.metricType
+                    .split('_')
+                    .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
+                    .join(' ');
+                  
+                  // Find matching problem area for additional notes
+                  const matchingProblemArea = problemAreas.find(
+                    pa => pa.type === metric.metricType
+                  );
+                  
+                  return (
+                    <div key={metric.id} className="border border-neutral-200 rounded p-4">
+                      <div className="mb-2">
+                        <h5 className="font-bold">{metricDisplayName}</h5>
+                      </div>
+                      <div className="mb-1 flex justify-between text-sm">
+                        <span>Performance Rating</span>
+                      </div>
+                      <RatingBar rating={metric.rating} />
+                      <div className="mt-3 text-sm text-neutral-600">
+                        <p><strong>Notes:</strong> {metric.notes}</p>
+                        {matchingProblemArea && matchingProblemArea.notes && (
+                          <p className="mt-2"><strong>Focus Area Notes:</strong> {matchingProblemArea.notes}</p>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </TabsContent>
+          
+          {/* Shot Specific Areas Tab */}
+          <TabsContent value="shots">
+            <div className="border-2 border-amber-500/20 rounded-lg p-4 bg-amber-500/5">
+              <h3 className="text-lg font-bold mb-3 text-amber-600">Shot Specific Performance Areas</h3>
+              
+              {Object.keys(shotTypeGroups).length === 0 ? (
+                <div className="text-center py-6 text-neutral-500">
+                  No shot-specific assessments recorded
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {Object.values(shotTypeGroups).map((group, index) => (
+                    <div key={index} className="border border-neutral-200 rounded p-4">
+                      <div className="flex justify-between items-center mb-3">
+                        <h4 className="font-bold text-lg">{group.name}</h4>
+                        <div className="flex items-center">
+                          <span className="mr-2 text-sm">Overall Rating:</span>
+                          <StarRating 
+                            initialRating={group.rating}
+                            readOnly={true}
+                          />
+                        </div>
+                      </div>
+                      
+                      {group.notes && (
+                        <div className="mb-4 p-3 bg-neutral-100 rounded">
+                          <p className="text-sm">{group.notes}</p>
+                        </div>
+                      )}
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {group.areas.map((area, areaIndex) => (
+                          <div key={areaIndex} className="border border-neutral-200 rounded p-3">
+                            <div className="flex justify-between items-center">
+                              <span className="font-medium">{area.name}</span>
+                              <StarRating 
+                                initialRating={area.rating}
+                                readOnly={true}
+                              />
+                            </div>
+                            {area.notes && (
+                              <p className="mt-2 text-xs text-neutral-600">{area.notes}</p>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </TabsContent>
+          
+          {/* Session Notes Tab */}
+          <TabsContent value="session">
+            <div className="border-2 border-primary/10 rounded-lg p-4 bg-primary/5">
+              <h3 className="text-lg font-bold mb-3 text-primary">Session Notes</h3>
+              <div className="p-4 bg-white border border-neutral-200 rounded">
+                {assessment.notes ? (
+                  <p className="whitespace-pre-line">{assessment.notes}</p>
+                ) : (
+                  <p className="text-neutral-500 italic">No session notes recorded</p>
+                )}
+              </div>
+            </div>
+          </TabsContent>
+        </Tabs>
+      </CardContent>
+    </Card>
+  );
+};
 
 const PlayerProfile = () => {
   const params = useParams<{ id: string }>();
@@ -198,6 +382,61 @@ const PlayerProfile = () => {
           metrics={chartMetrics}
           className="mb-6"
         />
+      )}
+      
+      {/* Weekly Performance Assessment History */}
+      <h3 className="text-xl font-bold text-neutral-400 mb-4">Weekly Performance Assessment History</h3>
+      
+      {!isLoading && (!assessments || assessments.length === 0) ? (
+        <Card className="mb-6">
+          <CardContent className="flex items-center justify-center py-10">
+            <div className="text-center">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-neutral-300 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+              </svg>
+              <p className="text-neutral-500 mb-2">No assessments available yet</p>
+              <p className="text-sm text-neutral-400">Complete a performance assessment to view assessment history</p>
+              <Link href={`/players/${player?.id}/assessment`}>
+                <Button className="mt-4 bg-secondary text-white px-4 py-2 rounded-lg flex items-center mx-auto">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-plus mr-1">
+                    <path d="M5 12h14"></path>
+                    <path d="M12 5v14"></path>
+                  </svg>
+                  <span>New Assessment</span>
+                </Button>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+      ) : isLoading ? (
+        <div className="space-y-6">
+          {[...Array(1)].map((_, i) => (
+            <Card key={i}>
+              <CardContent className="p-0">
+                <Skeleton className="h-12 w-full rounded-t-lg" />
+                <div className="p-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {[...Array(4)].map((_, j) => (
+                      <Skeleton key={j} className="h-24 w-full" />
+                    ))}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : (
+        <div className="space-y-6">
+          {assessments && assessments
+            .sort((a, b) => new Date(b.weekStart).getTime() - new Date(a.weekStart).getTime())
+            .map((assessment) => (
+              <AssessmentHistoryCard 
+                key={assessment.id}
+                assessment={assessment}
+              />
+            ))
+          }
+        </div>
       )}
     </div>
   );
