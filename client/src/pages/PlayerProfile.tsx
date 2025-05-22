@@ -6,6 +6,7 @@ import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import RatingBar from "@/components/RatingBar";
 import VideoPlayer from "@/components/VideoPlayer";
 import NotesList from "@/components/NotesList";
@@ -165,28 +166,53 @@ const AssessmentHistoryCard = ({ assessment }: { assessment: PerformanceAssessme
                         </div>
                       )}
                       
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {group.areas.map((area, areaIndex) => (
-                          <div key={areaIndex} className="border border-neutral-200 rounded p-3">
-                            <div className="flex justify-between items-center">
-                              <span className="font-medium">{area.name}</span>
-                              <div>
-                                {area.rating === 1 ? (
-                                  <span className="px-3 py-1 rounded text-sm font-medium bg-red-500 text-white">
-                                    Needs Work
-                                  </span>
-                                ) : (
-                                  <span className="px-3 py-1 rounded text-sm font-medium bg-green-500 text-white">
-                                    Good
-                                  </span>
-                                )}
-                              </div>
+                      <div className="mb-4">
+                        <Collapsible className="w-full">
+                          <CollapsibleTrigger asChild>
+                            <Button variant="outline" className="w-full flex justify-between items-center">
+                              <span>Problem Areas</span>
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="20"
+                                height="20"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                className="ml-2"
+                              >
+                                <path d="m6 9 6 6 6-6" />
+                              </svg>
+                            </Button>
+                          </CollapsibleTrigger>
+                          <CollapsibleContent className="pt-2">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-2">
+                              {group.areas.map((area, areaIndex) => (
+                                <div key={areaIndex} className="border border-neutral-200 rounded p-3">
+                                  <div className="flex justify-between items-center">
+                                    <span className="font-medium">{area.name}</span>
+                                    <div>
+                                      {area.rating === 1 ? (
+                                        <span className="px-3 py-1 rounded text-sm font-medium bg-red-500 text-white">
+                                          Needs Work
+                                        </span>
+                                      ) : (
+                                        <span className="px-3 py-1 rounded text-sm font-medium bg-green-500 text-white">
+                                          Good
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+                                  {area.notes && (
+                                    <p className="mt-2 text-xs text-neutral-600">{area.notes}</p>
+                                  )}
+                                </div>
+                              ))}
                             </div>
-                            {area.notes && (
-                              <p className="mt-2 text-xs text-neutral-600">{area.notes}</p>
-                            )}
-                          </div>
-                        ))}
+                          </CollapsibleContent>
+                        </Collapsible>
                       </div>
                     </div>
                   ))}
