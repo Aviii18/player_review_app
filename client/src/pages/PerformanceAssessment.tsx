@@ -543,6 +543,20 @@ const PerformanceAssessment = () => {
                         title="Training Video 4"
                         className="w-full"
                         triggerClassName="w-full h-24 relative bg-gray-200"
+                        initialTags={{
+                          shotType: "Straight Drive",
+                          ballSpeed: "Medium",
+                          reactionTime: "Slow",
+                          batConnect: "Poor",
+                          batSwing: "Poor"
+                        }}
+                        onTagsUpdate={(tags) => {
+                          toast({
+                            title: "Video Tags Updated",
+                            description: "The tags for this video have been updated successfully."
+                          });
+                          console.log("Updated tags for Video 4:", tags);
+                        }}
                       />
                       <div className="p-2">
                         <div className="flex flex-wrap gap-1">
