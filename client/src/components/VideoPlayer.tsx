@@ -50,17 +50,23 @@ const VideoPlayer = ({
     // Simply use a generic cricket shot image for thumbnails
     if (!thumbnail) {
       // Set color-coded thumbnails instead of trying to generate them
-      const colors = {
-        'Video 1.mp4': 'bg-blue-500',
-        'Video 2.mp4': 'bg-green-500',
-        'Video 3.mp4': 'bg-yellow-500',
-        'Video 4.mp4': 'bg-red-500',
-      };
-      
+      // Map for thumbnail background colors based on video content
       const fileName = videoUrl.split('/').pop() || '';
-      setThumbnailUrl(`data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="150" viewBox="0 0 300 150"><rect width="300" height="150" fill="${
-        fileName in colors ? colors[fileName].replace('#', '%23') : '%23cccccc'
-      }"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="Arial" font-size="24" fill="white">Cricket Training</text></svg>`);
+      
+      // Determine color based on filename
+      let bgColor = '%23cccccc'; // Default gray
+      
+      if (fileName === 'Video 1.mp4') {
+        bgColor = '%233b82f6'; // blue-500
+      } else if (fileName === 'Video 2.mp4') {
+        bgColor = '%2322c55e'; // green-500
+      } else if (fileName === 'Video 3.mp4') {
+        bgColor = '%23eab308'; // yellow-500
+      } else if (fileName === 'Video 4.mp4') {
+        bgColor = '%23ef4444'; // red-500
+      }
+      
+      setThumbnailUrl(`data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="150" viewBox="0 0 300 150"><rect width="300" height="150" fill="${bgColor}"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="Arial" font-size="24" fill="white">Cricket Training</text></svg>`);
     }
   }, [videoUrl, thumbnail]);
 

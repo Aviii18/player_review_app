@@ -316,6 +316,8 @@ const PlayerProfile = () => {
   const [batConnectFilter, setBatConnectFilter] = useState("All");
   const [footworkFilter, setFootworkFilter] = useState("All");
 
+  // Query player videos will be handled below
+
   const { data: player, isLoading: isPlayerLoading } = useQuery<Player>({
     queryKey: [`/api/players/${playerId}`],
     enabled: !isNaN(playerId)
@@ -335,8 +337,8 @@ const PlayerProfile = () => {
     enabled: !isNaN(playerId) && latestAssessmentId !== undefined
   });
   
-  // Fetch player videos
-  const { data: playerVideos = [], isLoading: isVideosLoading } = useQuery<Video[]>({
+  // Query player videos for the video library section
+  const { data: playerVideos, isLoading: isVideosLoading } = useQuery<Video[]>({
     queryKey: [`/api/players/${playerId}/videos`],
     enabled: !isNaN(playerId)
   });
