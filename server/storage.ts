@@ -215,7 +215,7 @@ export class MemStorage implements IStorage {
       {
         name: "Rajiv Sharma",
         batch: "Morning Batch",
-        image: "https://images.unsplash.com/photo-1531415074968-036ba1b575da?ixlib=rb-4.0.3&auto=format&fit=crop&q=80",
+        photoUrl: "https://images.unsplash.com/photo-1531415074968-036ba1b575da?ixlib=rb-4.0.3&auto=format&fit=crop&q=80",
         joinedDate: new Date("2023-01-15"),
         age: 17,
         dominantHand: "Right",
@@ -224,7 +224,7 @@ export class MemStorage implements IStorage {
       {
         name: "Priya Patel",
         batch: "Evening Batch",
-        image: "https://images.unsplash.com/photo-1628779238951-be2c9f2a59f4?ixlib=rb-4.0.3&auto=format&fit=crop&q=80",
+        photoUrl: "https://images.unsplash.com/photo-1628779238951-be2c9f2a59f4?ixlib=rb-4.0.3&auto=format&fit=crop&q=80",
         joinedDate: new Date("2023-01-10"),
         age: 16,
         dominantHand: "Right",
@@ -233,7 +233,7 @@ export class MemStorage implements IStorage {
       {
         name: "Arjun Singh",
         batch: "Weekend Batch",
-        image: "https://images.unsplash.com/photo-1562077772-3bd90403f7f0?ixlib=rb-4.0.3&auto=format&fit=crop&q=80",
+        photoUrl: "https://images.unsplash.com/photo-1562077772-3bd90403f7f0?ixlib=rb-4.0.3&auto=format&fit=crop&q=80",
         joinedDate: new Date("2023-05-05"),
         age: 15,
         dominantHand: "Left",
@@ -242,7 +242,7 @@ export class MemStorage implements IStorage {
       {
         name: "Meera Reddy",
         batch: "Morning Batch",
-        image: "https://images.unsplash.com/photo-1580748141549-71748dbe0bdc?ixlib=rb-4.0.3&auto=format&fit=crop&q=80",
+        photoUrl: "https://images.unsplash.com/photo-1580748141549-71748dbe0bdc?ixlib=rb-4.0.3&auto=format&fit=crop&q=80",
         joinedDate: new Date("2023-03-15"),
         age: 17,
         dominantHand: "Right",
