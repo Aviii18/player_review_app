@@ -7,6 +7,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
 import RatingBar from "@/components/RatingBar";
 import VideoPlayer from "@/components/VideoPlayer";
 import NotesList from "@/components/NotesList";
@@ -298,6 +303,12 @@ const AssessmentHistoryCard = ({ assessment }: { assessment: PerformanceAssessme
 const PlayerProfile = () => {
   const params = useParams<{ id: string }>();
   const playerId = params.id ? parseInt(params.id) : 0;
+  const { toast } = useToast();
+  
+  // State for note dialog
+  const [newNote, setNewNote] = useState("");
+  const [isAddingNote, setIsAddingNote] = useState(false);
+  const [localProfileNotes, setLocalProfileNotes] = useState<Array<{date: string, author: string, content: string}>>([]);
 
   const { data: player, isLoading: isPlayerLoading } = useQuery<Player>({
     queryKey: [`/api/players/${playerId}`],
@@ -320,8 +331,41 @@ const PlayerProfile = () => {
 
   const isLoading = isPlayerLoading || isAssessmentsLoading || isMetricsLoading;
 
-  // Mock data for profile notes
-  const profileNotes = [
+  // Function to handle adding a new note
+  const handleAddNote = () => {
+    if (!newNote.trim()) {
+      toast({
+        title: "Note cannot be empty",
+        description: "Please add some content to your note.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const today = new Date();
+    const newNoteObject = {
+      date: format(today, "MMMM d, yyyy"),
+      author: "Coach", // In a real app, this would be the logged-in coach's name
+      content: newNote.trim()
+    };
+
+    // Add the new note to the local state
+    // In a real application, this would be saved to the database
+    setLocalProfileNotes(prevNotes => [newNoteObject, ...prevNotes]);
+    
+    // Reset the note input and close the dialog
+    setNewNote("");
+    setIsAddingNote(false);
+    
+    toast({
+      title: "Note added successfully",
+      description: "Your note has been added to the player's profile.",
+      variant: "default"
+    });
+  };
+
+  // Base notes - in a real app these would come from the API
+  const baseProfileNotes = [
     {
       date: "July 25, 2023",
       author: "Coach Sharma",
@@ -338,6 +382,9 @@ const PlayerProfile = () => {
       content: "Rajiv's reaction time has improved significantly. His ability to pick up the ball early has enhanced. Need to continue focus on foot movement."
     }
   ];
+  
+  // Combine local notes with base notes
+  const profileNotes = [...localProfileNotes, ...baseProfileNotes];
 
 
 
@@ -395,21 +442,81 @@ const PlayerProfile = () => {
                         </div>
                       </div>
                     </div>
-                    <div className="flex space-x-2">
-                      <NotesList 
-                        title={`Profile Notes - ${player.name}`}
-                        notes={profileNotes}
-                        count={profileNotes.length}
-                      />
-                      <Link href={`/players/${player.id}/assessment`}>
-                        <Button className="bg-secondary text-white px-4 py-2 rounded-lg flex items-center">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-plus mr-1">
-                            <path d="M5 12h14"></path>
-                            <path d="M12 5v14"></path>
-                          </svg>
-                          <span>New Assessment</span>
-                        </Button>
-                      </Link>
+                    <div className="flex flex-col space-y-4">
+                      <div className="flex justify-between items-start">
+                        <h3 className="text-lg font-bold mb-2">Profile Notes</h3>
+                        <div className="flex space-x-2">
+                          <Dialog open={isAddingNote} onOpenChange={setIsAddingNote}>
+                            <DialogTrigger asChild>
+                              <Button variant="outline" className="flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1">
+                                  <path d="M12 5v14M5 12h14"></path>
+                                </svg>
+                                Add Note
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent>
+                              <DialogHeader>
+                                <DialogTitle>Add Player Note</DialogTitle>
+                                <DialogDescription>
+                                  Add a coaching note to {player.name}'s profile. This will be visible to all coaches.
+                                </DialogDescription>
+                              </DialogHeader>
+                              <div className="py-4">
+                                <Label htmlFor="note" className="text-sm font-medium mb-2 block">
+                                  Note Content
+                                </Label>
+                                <Textarea
+                                  id="note"
+                                  placeholder="Enter your coaching observations, technical feedback, or drill recommendations..."
+                                  className="h-32"
+                                  value={newNote}
+                                  onChange={(e) => setNewNote(e.target.value)}
+                                />
+                              </div>
+                              <DialogFooter>
+                                <Button 
+                                  variant="outline" 
+                                  onClick={() => setIsAddingNote(false)}
+                                >
+                                  Cancel
+                                </Button>
+                                <Button onClick={handleAddNote}>
+                                  Save Note
+                                </Button>
+                              </DialogFooter>
+                            </DialogContent>
+                          </Dialog>
+                          
+                          <Link href={`/players/${player.id}/assessment`}>
+                            <Button className="bg-secondary text-white px-4 py-2 rounded-lg flex items-center">
+                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1">
+                                <path d="M5 12h14"></path>
+                                <path d="M12 5v14"></path>
+                              </svg>
+                              <span>New Assessment</span>
+                            </Button>
+                          </Link>
+                        </div>
+                      </div>
+                      
+                      <div className="border border-neutral-200 rounded-lg p-4">
+                        {profileNotes.length > 0 ? (
+                          <div className="space-y-4">
+                            {profileNotes.map((note, index) => (
+                              <div key={index} className="border-b border-neutral-100 pb-3 last:border-0 last:pb-0">
+                                <div className="flex justify-between items-center mb-1">
+                                  <span className="font-medium text-primary">{note.author}</span>
+                                  <span className="text-sm text-neutral-500">{note.date}</span>
+                                </div>
+                                <p className="text-sm">{note.content}</p>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-center text-neutral-500 py-4">No notes yet. Add the first note to track this player's progress.</p>
+                        )}
+                      </div>
                     </div>
                   </div>
 
