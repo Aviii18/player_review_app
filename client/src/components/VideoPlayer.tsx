@@ -132,11 +132,12 @@ const VideoPlayer = ({
 
   return (
     <>
-      <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <Dialog>
         <DialogTrigger asChild>
           <Button 
             variant="ghost" 
             className={`p-1 text-primary hover:text-primary-dark focus:ring-0 ${triggerClassName}`}
+            onClick={() => setIsOpen(true)}
           >
             {thumbnailUrl ? (
               <div className="relative w-full h-full overflow-hidden aspect-video">
@@ -165,14 +166,20 @@ const VideoPlayer = ({
         <DialogContent className="sm:max-w-4xl">
           <DialogHeader>
             <DialogTitle>{title}</DialogTitle>
+            <p className="text-sm text-gray-500">Cricket technique training video</p>
           </DialogHeader>
-          <div className="aspect-w-16 aspect-h-9 mt-2">
+          <div className="mt-2">
             {getVideoPlayer()}
           </div>
-          <DialogFooter>
+          <DialogFooter className="flex justify-between items-center mt-4">
+            <div className="text-sm">
+              <span className="font-medium">Training: </span> 
+              {tags.shotType && <span className="mr-2 px-2 py-0.5 bg-blue-100 text-blue-800 rounded-full text-xs">{tags.shotType}</span>}
+              {tags.ballSpeed && <span className="mr-2 px-2 py-0.5 bg-green-100 text-green-800 rounded-full text-xs">{tags.ballSpeed}</span>}
+            </div>
             <Button 
-              variant="outline" 
               onClick={() => setShowTagDialog(true)}
+              className="bg-secondary text-white hover:bg-secondary/90"
             >
               Tag Video
             </Button>
