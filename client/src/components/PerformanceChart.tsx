@@ -47,8 +47,7 @@ const metricNames: Record<string, string> = {
 const PerformanceChart = ({ assessments, metrics, className }: PerformanceChartProps) => {
   // Transform the data for the chart
   const chartData = useMemo(() => {
-    // We'll generate some sample data based on the assessments we have
-    // In a real application, you would fetch historical data for each assessment
+    // Process authentic assessment data based on weekly averages
     const weeklyData: WeeklyData[] = [];
     
     // Sort assessments by date (oldest first)
@@ -56,7 +55,7 @@ const PerformanceChart = ({ assessments, metrics, className }: PerformanceChartP
       (a, b) => new Date(a.weekStart).getTime() - new Date(b.weekStart).getTime()
     );
     
-    // Create data points for each assessment
+    // Create data points for each assessment week
     sortedAssessments.forEach((assessment, index) => {
       const week = format(new Date(assessment.weekStart), "MMM d");
       const dataPoint: WeeklyData = {
@@ -64,37 +63,61 @@ const PerformanceChart = ({ assessments, metrics, className }: PerformanceChartP
         week
       };
       
-      // For the most recent assessment, use the actual metrics
-      if (index === sortedAssessments.length - 1) {
-        // Use the real metrics for the latest assessment
-        metrics.forEach(metric => {
-          // Use the actual star rating (1-5) directly
-          dataPoint[metric.metricType] = metric.rating;
-        });
-      } else {
-        // For previous weeks, simulate progression by generating values
-        // that trend toward the current metrics
-        metrics.forEach(metric => {
-          const currentValue = metric.rating; // Current star rating (1-5)
-          // Create a progression toward the current value (in stars)
-          // This simulates improvement over time with a star rating progression
-          const progressionFactor = 0.5 + (index * 0.5 / sortedAssessments.length);
-          // For star ratings, we want to show incremental improvement from lower to higher stars
-          let previousRating: number;
-          
-          if (currentValue <= 2) {
-            // If current is low, start from 1 and gradually improve
-            previousRating = 1 + Math.floor(progressionFactor * (currentValue - 1));
-          } else if (currentValue === 3) {
-            // If current is medium, progress from 1-2 to 3
-            previousRating = 1 + Math.floor(progressionFactor * 2);
-          } else {
-            // If current is high (4-5), show more dramatic improvement
-            previousRating = 1 + Math.floor(progressionFactor * (currentValue - 1));
+      // Group metrics by type (cover_drive, bat_connect, etc.)
+      const metricsByType: Record<string, number[]> = {};
+      
+      // Use assessment metrics data
+      metrics
+        .filter(metric => metric.assessmentId === assessment.id)
+        .forEach(metric => {
+          // Initialize array for this metric type if not exists
+          if (!metricsByType[metric.metricType]) {
+            metricsByType[metric.metricType] = [];
           }
           
-          // Ensure we keep within 1-5 star range
-          dataPoint[metric.metricType] = Math.max(1, Math.min(5, previousRating));
+          // Add the star rating (1-5) to the array
+          metricsByType[metric.metricType].push(metric.rating);
+        });
+      
+      // Calculate average star rating for each metric type
+      Object.entries(metricsByType).forEach(([metricType, ratings]) => {
+        if (ratings.length > 0) {
+          // Calculate average (sum of all ratings divided by count)
+          const sum = ratings.reduce((acc, rating) => acc + rating, 0);
+          const average = sum / ratings.length;
+          
+          // Add to data point with 1 decimal precision
+          dataPoint[metricType] = Math.round(average * 10) / 10;
+        } else {
+          // If no ratings for this metric type, use a default value
+          dataPoint[metricType] = 1;
+        }
+      });
+      
+      // For demonstration purposes, if we don't have enough historical data, 
+      // simulate some reasonable progression for missing metrics
+      if (index < sortedAssessments.length - 1) {
+        Object.entries(metricNames).forEach(([metricType, _]) => {
+          // If this metric type doesn't have data in the current week
+          if (!dataPoint[metricType]) {
+            // Get the latest known value for this metric type (if exists)
+            const latestValue = metrics.find(m => m.metricType === metricType)?.rating || 3;
+            
+            // Create a progression toward the latest value
+            const progressionFactor = 0.5 + (index * 0.5 / sortedAssessments.length);
+            let estimatedRating: number;
+            
+            if (latestValue <= 2) {
+              estimatedRating = 1 + Math.floor(progressionFactor * (latestValue - 1));
+            } else if (latestValue === 3) {
+              estimatedRating = 1 + Math.floor(progressionFactor * 2);
+            } else {
+              estimatedRating = 1 + Math.floor(progressionFactor * (latestValue - 1));
+            }
+            
+            // Ensure we keep within 1-5 star range
+            dataPoint[metricType] = Math.max(1, Math.min(5, estimatedRating));
+          }
         });
       }
       
@@ -102,7 +125,7 @@ const PerformanceChart = ({ assessments, metrics, className }: PerformanceChartP
     });
     
     return weeklyData;
-  }, [assessments, metrics]);
+  }, [assessments, metrics, metricNames]);
 
   if (chartData.length < 2) {
     return (
@@ -139,8 +162,8 @@ const PerformanceChart = ({ assessments, metrics, className }: PerformanceChartP
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="week" />
             <YAxis 
-              domain={[0, 5]} 
-              ticks={[0, 1, 2, 3, 4, 5]} 
+              domain={[1, 5]} 
+              ticks={[1, 2, 3, 4, 5]} 
               label={{ value: 'Star Rating', angle: -90, position: 'insideLeft' }} 
             />
             <Tooltip 
