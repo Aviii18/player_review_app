@@ -68,21 +68,33 @@ const PerformanceChart = ({ assessments, metrics, className }: PerformanceChartP
       if (index === sortedAssessments.length - 1) {
         // Use the real metrics for the latest assessment
         metrics.forEach(metric => {
-          // Convert rating to a 0-100 scale for visualization
+          // Use the actual star rating (1-5) directly
           dataPoint[metric.metricType] = metric.rating;
         });
       } else {
         // For previous weeks, simulate progression by generating values
         // that trend toward the current metrics
         metrics.forEach(metric => {
-          const currentValue = metric.rating;
-          // Create a progression toward the current value
-          // This simulates improvement over time
-          const randomFactor = 0.85 + (Math.random() * 0.3);
-          const progressionValue = Math.round(
-            (currentValue * (0.7 + (index * 0.3 / sortedAssessments.length))) * randomFactor
-          );
-          dataPoint[metric.metricType] = Math.max(30, Math.min(100, progressionValue));
+          const currentValue = metric.rating; // Current star rating (1-5)
+          // Create a progression toward the current value (in stars)
+          // This simulates improvement over time with a star rating progression
+          const progressionFactor = 0.5 + (index * 0.5 / sortedAssessments.length);
+          // For star ratings, we want to show incremental improvement from lower to higher stars
+          let previousRating: number;
+          
+          if (currentValue <= 2) {
+            // If current is low, start from 1 and gradually improve
+            previousRating = 1 + Math.floor(progressionFactor * (currentValue - 1));
+          } else if (currentValue === 3) {
+            // If current is medium, progress from 1-2 to 3
+            previousRating = 1 + Math.floor(progressionFactor * 2);
+          } else {
+            // If current is high (4-5), show more dramatic improvement
+            previousRating = 1 + Math.floor(progressionFactor * (currentValue - 1));
+          }
+          
+          // Ensure we keep within 1-5 star range
+          dataPoint[metric.metricType] = Math.max(1, Math.min(5, previousRating));
         });
       }
       
@@ -126,9 +138,13 @@ const PerformanceChart = ({ assessments, metrics, className }: PerformanceChartP
           >
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="week" />
-            <YAxis domain={[0, 100]} />
+            <YAxis 
+              domain={[0, 5]} 
+              ticks={[0, 1, 2, 3, 4, 5]} 
+              label={{ value: 'Star Rating', angle: -90, position: 'insideLeft' }} 
+            />
             <Tooltip 
-              formatter={(value) => [`${value}/100`, '']}
+              formatter={(value) => [`${value} Stars`, '']}
               labelFormatter={(label) => `Week of ${label}`}
             />
             <Legend />
