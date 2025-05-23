@@ -440,9 +440,58 @@ const PerformanceAssessment = () => {
 
 
                 
-                {/* Video List - Temporarily Hidden */}
-                <div className="p-4 border border-dashed border-gray-300 rounded-lg bg-gray-50 text-center">
-                  <p className="text-neutral-500">Video library coming soon</p>
+                {/* Video Library Carousel */}
+                <div className="mb-4">
+                  <h4 className="font-medium mb-3">Video Library</h4>
+                  <div className="flex overflow-x-auto gap-3 pb-2">
+                    <div className="flex-shrink-0 w-48 border border-neutral-200 rounded overflow-hidden">
+                      <VideoPlayer 
+                        videoUrl="/videos/Video 1.mp4" 
+                        title="Cover Drive Technique"
+                        className="w-full"
+                        triggerClassName="w-full h-24 relative"
+                      />
+                      <div className="p-2">
+                        <h5 className="font-medium text-sm">Cover Drive Technique</h5>
+                      </div>
+                    </div>
+                    
+                    <div className="flex-shrink-0 w-48 border border-neutral-200 rounded overflow-hidden">
+                      <VideoPlayer 
+                        videoUrl="/videos/Video 2.mp4" 
+                        title="Pull Shot Practice"
+                        className="w-full"
+                        triggerClassName="w-full h-24 relative"
+                      />
+                      <div className="p-2">
+                        <h5 className="font-medium text-sm">Pull Shot Practice</h5>
+                      </div>
+                    </div>
+                    
+                    <div className="flex-shrink-0 w-48 border border-neutral-200 rounded overflow-hidden">
+                      <VideoPlayer 
+                        videoUrl="/videos/Video 3.mp4" 
+                        title="Sweep Shot Technique"
+                        className="w-full"
+                        triggerClassName="w-full h-24 relative"
+                      />
+                      <div className="p-2">
+                        <h5 className="font-medium text-sm">Sweep Shot Technique</h5>
+                      </div>
+                    </div>
+                    
+                    <div className="flex-shrink-0 w-48 border border-neutral-200 rounded overflow-hidden">
+                      <VideoPlayer 
+                        videoUrl="/videos/Video 4.mp4" 
+                        title="Cut Shot Training"
+                        className="w-full"
+                        triggerClassName="w-full h-24 relative"
+                      />
+                      <div className="p-2">
+                        <h5 className="font-medium text-sm">Cut Shot Training</h5>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
