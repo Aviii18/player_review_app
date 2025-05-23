@@ -132,9 +132,6 @@ const AssessmentHistoryCard = ({ assessment }: { assessment: PerformanceAssessme
                         {metric.notes && (
                           <p className="mb-2"><strong>Notes:</strong> {metric.notes}</p>
                         )}
-                        {matchingProblemArea && matchingProblemArea.notes && (
-                          <p className="mt-2"><strong>Focus Area Notes:</strong> {matchingProblemArea.notes}</p>
-                        )}
                       </div>
                     </div>
                   );
