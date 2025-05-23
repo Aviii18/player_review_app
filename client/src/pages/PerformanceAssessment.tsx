@@ -438,52 +438,7 @@ const PerformanceAssessment = () => {
                   </div>
                 </div>
 
-                {/* Training Videos Carousel */}
-                <div className="mb-4">
-                  <h4 className="font-medium mb-3">Training Videos</h4>
-                  <div className="grid grid-cols-1 gap-3 mb-4">
-                    <div className="border border-neutral-200 rounded overflow-hidden cursor-pointer hover:border-primary transition">
-                      <VideoPlayer 
-                        videoUrl="/videos/Video 1.mp4" 
-                        title="Cover Drive Technique"
-                        className="w-full"
-                      />
-                      <div className="p-2">
-                        <h5 className="font-medium text-sm">Cover Drive Technique</h5>
-                      </div>
-                    </div>
-                    <div className="border border-neutral-200 rounded overflow-hidden cursor-pointer hover:border-primary transition">
-                      <VideoPlayer 
-                        videoUrl="/videos/Video 2.mp4" 
-                        title="Pull Shot Practice"
-                        className="w-full"
-                      />
-                      <div className="p-2">
-                        <h5 className="font-medium text-sm">Pull Shot Practice</h5>
-                      </div>
-                    </div>
-                    <div className="border border-neutral-200 rounded overflow-hidden cursor-pointer hover:border-primary transition">
-                      <VideoPlayer 
-                        videoUrl="/videos/Video 3.mp4" 
-                        title="Sweep Shot Technique"
-                        className="w-full"
-                      />
-                      <div className="p-2">
-                        <h5 className="font-medium text-sm">Sweep Shot Technique</h5>
-                      </div>
-                    </div>
-                    <div className="border border-neutral-200 rounded overflow-hidden cursor-pointer hover:border-primary transition">
-                      <VideoPlayer 
-                        videoUrl="/videos/Video 4.mp4" 
-                        title="Cut Shot Training"
-                        className="w-full"
-                      />
-                      <div className="p-2">
-                        <h5 className="font-medium text-sm">Cut Shot Training</h5>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+
                 
                 {/* Video List */}
                 <div className="space-y-2">
