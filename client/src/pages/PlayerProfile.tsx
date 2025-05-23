@@ -364,27 +364,49 @@ const PlayerProfile = () => {
     });
   };
 
-  // Base notes - in a real app these would come from the API
+  // Base profile notes - in a real app these would come from the API
   const baseProfileNotes = [
     {
       date: "July 25, 2023",
       author: "Coach Sharma",
-      content: "Rajiv has shown significant improvement in his straight drive. We need to focus on his weight transfer during cover drives in the upcoming sessions."
+      content: "Rajiv has shown significant improvement in his straight drive. We need to focus on his weight transfer during cover drives in the upcoming sessions.",
+      type: "profile"
     },
     {
       date: "July 18, 2023",
       author: "Coach Patel",
-      content: "Noticed a technical issue with his bat swing - tends to close the face too early. Recommended additional drills to correct this."
-    },
-    {
-      date: "July 10, 2023",
-      author: "Coach Sharma",
-      content: "Rajiv's reaction time has improved significantly. His ability to pick up the ball early has enhanced. Need to continue focus on foot movement."
+      content: "Noticed a technical issue with his bat swing - tends to close the face too early. Recommended additional drills to correct this.",
+      type: "profile"
     }
   ];
   
-  // Combine local notes with base notes
-  const profileNotes = [...localProfileNotes, ...baseProfileNotes];
+  // Session assessment notes
+  const sessionNotes = [
+    {
+      date: "July 10, 2023",
+      author: "Coach Sharma",
+      content: "Rajiv's reaction time has improved significantly. His ability to pick up the ball early has enhanced. Need to continue focus on foot movement.",
+      type: "assessment"
+    },
+    {
+      date: "June 28, 2023",
+      author: "Coach Patel",
+      content: "During today's session, Rajiv was able to execute the pull shot with much better control. Still needs to work on timing against faster deliveries.",
+      type: "assessment"
+    }
+  ];
+  
+  // Add type information to local notes
+  const typedLocalNotes = localProfileNotes.map(note => ({
+    ...note,
+    type: "profile" // New notes added from profile are "profile" type
+  }));
+  
+  // Combine all notes and sort by date (newest first)
+  const allNotes = [...typedLocalNotes, ...baseProfileNotes, ...sessionNotes];
+  const profileNotes = allNotes.sort((a, b) => {
+    return new Date(b.date).getTime() - new Date(a.date).getTime();
+  });
 
 
 
@@ -499,7 +521,18 @@ const PlayerProfile = () => {
                             {/* Latest Note (always visible) */}
                             <div className="border-b border-neutral-100 pb-3 mb-2">
                               <div className="flex justify-between items-center mb-1">
-                                <span className="font-medium text-primary">{profileNotes[0].author}</span>
+                                <div className="flex items-center gap-2">
+                                  <span className="font-medium text-primary">{profileNotes[0].author}</span>
+                                  {profileNotes[0].type === 'profile' ? (
+                                    <span className="text-xs px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full">
+                                      Profile Note
+                                    </span>
+                                  ) : (
+                                    <span className="text-xs px-2 py-0.5 bg-amber-100 text-amber-700 rounded-full">
+                                      Session Assessment
+                                    </span>
+                                  )}
+                                </div>
                                 <span className="text-sm text-neutral-500">{profileNotes[0].date}</span>
                               </div>
                               <p className="text-sm">{profileNotes[0].content}</p>
@@ -534,7 +567,18 @@ const PlayerProfile = () => {
                                 {profileNotes.slice(1).map((note, index) => (
                                   <div key={index} className="border-b border-neutral-100 pb-3 last:border-0 last:pb-0">
                                     <div className="flex justify-between items-center mb-1">
-                                      <span className="font-medium text-primary">{note.author}</span>
+                                      <div className="flex items-center gap-2">
+                                        <span className="font-medium text-primary">{note.author}</span>
+                                        {note.type === 'profile' ? (
+                                          <span className="text-xs px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full">
+                                            Profile Note
+                                          </span>
+                                        ) : (
+                                          <span className="text-xs px-2 py-0.5 bg-amber-100 text-amber-700 rounded-full">
+                                            Session Assessment
+                                          </span>
+                                        )}
+                                      </div>
                                       <span className="text-sm text-neutral-500">{note.date}</span>
                                     </div>
                                     <p className="text-sm">{note.content}</p>
