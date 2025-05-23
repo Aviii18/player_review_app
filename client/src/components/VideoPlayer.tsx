@@ -1,6 +1,15 @@
 import { useState, useEffect, useRef } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
+interface VideoTag {
+  shotType: string;
+  ballSpeed: string;
+  reactionTime: string;
+  batConnect: string;
+  batSwing: string;
+}
 
 interface VideoPlayerProps {
   videoUrl: string;
@@ -8,12 +17,30 @@ interface VideoPlayerProps {
   thumbnail?: string;
   className?: string;
   triggerClassName?: string;
+  onTagsUpdate?: (tags: VideoTag) => void;
+  initialTags?: Partial<VideoTag>;
 }
 
-const VideoPlayer = ({ videoUrl, title, thumbnail, className, triggerClassName }: VideoPlayerProps) => {
+const VideoPlayer = ({ 
+  videoUrl, 
+  title, 
+  thumbnail, 
+  className, 
+  triggerClassName,
+  onTagsUpdate,
+  initialTags = {}
+}: VideoPlayerProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(thumbnail || null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const [showTagDialog, setShowTagDialog] = useState(false);
+  const [tags, setTags] = useState<Partial<VideoTag>>({
+    shotType: initialTags.shotType || '',
+    ballSpeed: initialTags.ballSpeed || '',
+    reactionTime: initialTags.reactionTime || '',
+    batConnect: initialTags.batConnect || '',
+    batSwing: initialTags.batSwing || ''
+  });
 
   const isLocalVideo = (url: string) => {
     return url.endsWith('.mp4') || url.endsWith('.webm') || url.endsWith('.ogg');
@@ -69,46 +96,193 @@ const VideoPlayer = ({ videoUrl, title, thumbnail, className, triggerClassName }
     }
   };
 
+  // Function to handle saving tags
+  const handleSaveTags = () => {
+    // Only trigger update if callback is provided and all tags are filled
+    if (onTagsUpdate && 
+        tags.shotType && 
+        tags.ballSpeed && 
+        tags.reactionTime && 
+        tags.batConnect && 
+        tags.batSwing) {
+      onTagsUpdate(tags as VideoTag);
+    }
+    setShowTagDialog(false);
+  };
+
+  const handleTagChange = (value: string, field: keyof VideoTag) => {
+    setTags({
+      ...tags,
+      [field]: value
+    });
+  };
+
+  // Tag selection options
+  const shotTypes = ['Cover Drive', 'Pull Shot', 'Off Drive', 'Straight Drive', 'Cut Shot', 'Sweep Shot', 'Defensive Block', 'Miscellaneous'];
+  const ballSpeeds = ['Fast', 'Medium', 'Slow'];
+  const reactionTimes = ['Fast', 'Avg', 'Slow'];
+  const batConnectOptions = ['Good', 'Avg', 'Poor'];
+  const batSwingOptions = ['Good', 'Avg', 'Poor'];
+
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        <Button 
-          variant="ghost" 
-          className={`p-1 text-primary hover:text-primary-dark focus:ring-0 ${triggerClassName}`}
-        >
-          {thumbnailUrl ? (
-            <div className="relative w-full h-full overflow-hidden aspect-video">
-              <img 
-                src={thumbnailUrl} 
-                alt={title} 
-                className="w-full h-full object-cover rounded"
-              />
-              <div className="absolute inset-0 flex items-center justify-center bg-black/20 hover:bg-black/30 transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="drop-shadow-lg">
+    <>
+      <Dialog open={isOpen} onOpenChange={setIsOpen}>
+        <DialogTrigger asChild>
+          <Button 
+            variant="ghost" 
+            className={`p-1 text-primary hover:text-primary-dark focus:ring-0 ${triggerClassName}`}
+          >
+            {thumbnailUrl ? (
+              <div className="relative w-full h-full overflow-hidden aspect-video">
+                <img 
+                  src={thumbnailUrl} 
+                  alt={title} 
+                  className="w-full h-full object-cover rounded"
+                />
+                <div className="absolute inset-0 flex items-center justify-center bg-black/20 hover:bg-black/30 transition-colors">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="drop-shadow-lg">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polygon points="10 8 16 12 10 16 10 8" fill="white"></polygon>
+                  </svg>
+                </div>
+              </div>
+            ) : (
+              <div className="w-full h-full flex items-center justify-center bg-neutral-200 rounded">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-play-circle">
                   <circle cx="12" cy="12" r="10"></circle>
-                  <polygon points="10 8 16 12 10 16 10 8" fill="white"></polygon>
+                  <polygon points="10 8 16 12 10 16 10 8"></polygon>
                 </svg>
               </div>
+            )}
+          </Button>
+        </DialogTrigger>
+        <DialogContent className="sm:max-w-4xl">
+          <DialogHeader>
+            <DialogTitle>{title}</DialogTitle>
+          </DialogHeader>
+          <div className="aspect-w-16 aspect-h-9 mt-2">
+            {getVideoPlayer()}
+          </div>
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => setShowTagDialog(true)}
+            >
+              Tag Video
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Tag Dialog */}
+      <Dialog open={showTagDialog} onOpenChange={setShowTagDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Tag Video: {title}</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <label className="text-right text-sm font-medium">Shot Type:</label>
+              <div className="col-span-3">
+                <Select 
+                  value={tags.shotType} 
+                  onValueChange={(value) => handleTagChange(value, 'shotType')}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select shot type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {shotTypes.map(type => (
+                      <SelectItem key={type} value={type}>{type}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-          ) : (
-            <div className="w-full h-full flex items-center justify-center bg-neutral-200 rounded">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-play-circle">
-                <circle cx="12" cy="12" r="10"></circle>
-                <polygon points="10 8 16 12 10 16 10 8"></polygon>
-              </svg>
+            
+            <div className="grid grid-cols-4 items-center gap-4">
+              <label className="text-right text-sm font-medium">Ball Speed:</label>
+              <div className="col-span-3">
+                <Select 
+                  value={tags.ballSpeed} 
+                  onValueChange={(value) => handleTagChange(value, 'ballSpeed')}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select ball speed" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {ballSpeeds.map(speed => (
+                      <SelectItem key={speed} value={speed}>{speed}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-          )}
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-4xl">
-        <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-        </DialogHeader>
-        <div className="aspect-w-16 aspect-h-9 mt-2">
-          {getVideoPlayer()}
-        </div>
-      </DialogContent>
-    </Dialog>
+            
+            <div className="grid grid-cols-4 items-center gap-4">
+              <label className="text-right text-sm font-medium">Reaction Time:</label>
+              <div className="col-span-3">
+                <Select 
+                  value={tags.reactionTime} 
+                  onValueChange={(value) => handleTagChange(value, 'reactionTime')}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select reaction time" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {reactionTimes.map(time => (
+                      <SelectItem key={time} value={time}>{time}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-4 items-center gap-4">
+              <label className="text-right text-sm font-medium">Bat Connect:</label>
+              <div className="col-span-3">
+                <Select 
+                  value={tags.batConnect} 
+                  onValueChange={(value) => handleTagChange(value, 'batConnect')}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select bat connect" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {batConnectOptions.map(option => (
+                      <SelectItem key={option} value={option}>{option}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-4 items-center gap-4">
+              <label className="text-right text-sm font-medium">Bat Swing:</label>
+              <div className="col-span-3">
+                <Select 
+                  value={tags.batSwing} 
+                  onValueChange={(value) => handleTagChange(value, 'batSwing')}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select bat swing" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {batSwingOptions.map(option => (
+                      <SelectItem key={option} value={option}>{option}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowTagDialog(false)}>Cancel</Button>
+            <Button onClick={handleSaveTags}>Save Tags</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
 

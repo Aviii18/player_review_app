@@ -450,6 +450,20 @@ const PerformanceAssessment = () => {
                         title="Training Video 1"
                         className="w-full"
                         triggerClassName="w-full h-24 relative bg-gray-200"
+                        initialTags={{
+                          shotType: "Miscellaneous",
+                          ballSpeed: "Medium",
+                          reactionTime: "Slow",
+                          batConnect: "Poor",
+                          batSwing: "Poor"
+                        }}
+                        onTagsUpdate={(tags) => {
+                          toast({
+                            title: "Video Tags Updated",
+                            description: "The tags for this video have been updated successfully."
+                          });
+                          console.log("Updated tags for Video 1:", tags);
+                        }}
                       />
                       <div className="p-2">
                         <div className="flex flex-wrap gap-1">
@@ -467,6 +481,20 @@ const PerformanceAssessment = () => {
                         title="Training Video 2"
                         className="w-full"
                         triggerClassName="w-full h-24 relative bg-gray-200"
+                        initialTags={{
+                          shotType: "Cover Drive",
+                          ballSpeed: "Medium",
+                          reactionTime: "Avg",
+                          batConnect: "Good",
+                          batSwing: "Good"
+                        }}
+                        onTagsUpdate={(tags) => {
+                          toast({
+                            title: "Video Tags Updated",
+                            description: "The tags for this video have been updated successfully."
+                          });
+                          console.log("Updated tags for Video 2:", tags);
+                        }}
                       />
                       <div className="p-2">
                         <div className="flex flex-wrap gap-1">
@@ -484,6 +512,20 @@ const PerformanceAssessment = () => {
                         title="Training Video 3"
                         className="w-full"
                         triggerClassName="w-full h-24 relative bg-gray-200"
+                        initialTags={{
+                          shotType: "Off Drive",
+                          ballSpeed: "Slow",
+                          reactionTime: "Slow",
+                          batConnect: "Poor",
+                          batSwing: "Avg"
+                        }}
+                        onTagsUpdate={(tags) => {
+                          toast({
+                            title: "Video Tags Updated",
+                            description: "The tags for this video have been updated successfully."
+                          });
+                          console.log("Updated tags for Video 3:", tags);
+                        }}
                       />
                       <div className="p-2">
                         <div className="flex flex-wrap gap-1">
