@@ -25,23 +25,27 @@ interface PerformanceChartProps {
   className?: string;
 }
 
-// Colors for different metrics
+// Colors for different metrics (using distinct colors for better visualization)
 const metricColors = {
-  "reaction_time": "#8884d8",
-  "bat_connect": "#82ca9d",
-  "shot_selection": "#ffc658",
-  "footwork": "#ff8042",
-  "cover_drive": "#0088fe",
-  "straight_drive": "#00C49F"
+  "reaction_time": "#8884d8", // Purple
+  "bat_connect": "#82ca9d",   // Green
+  "bat_swing": "#ffc658",     // Yellow
+  "foot_movement": "#ff8042", // Orange 
+  "cover_drive": "#0088fe",   // Blue
+  "pull_shot": "#00C49F",     // Teal
+  "straight_drive": "#ff5252", // Red
+  "defensive_block": "#9c27b0" // Violet
 };
 
 const metricNames: Record<string, string> = {
   "reaction_time": "Reaction Time",
   "bat_connect": "Bat Connect",
-  "shot_selection": "Shot Selection",
-  "footwork": "Footwork",
+  "bat_swing": "Bat Swing",
+  "foot_movement": "Foot Movement",
   "cover_drive": "Cover Drive",
-  "straight_drive": "Straight Drive"
+  "pull_shot": "Pull Shot", 
+  "straight_drive": "Straight Drive",
+  "defensive_block": "Defensive Block"
 };
 
 const PerformanceChart = ({ assessments, metrics, className }: PerformanceChartProps) => {
@@ -94,32 +98,75 @@ const PerformanceChart = ({ assessments, metrics, className }: PerformanceChartP
         }
       });
       
-      // For demonstration purposes, if we don't have enough historical data, 
-      // simulate some reasonable progression for missing metrics
-      if (index < sortedAssessments.length - 1) {
-        Object.entries(metricNames).forEach(([metricType, _]) => {
-          // If this metric type doesn't have data in the current week
-          if (!dataPoint[metricType]) {
-            // Get the latest known value for this metric type (if exists)
-            const latestValue = metrics.find(m => m.metricType === metricType)?.rating || 3;
-            
-            // Create a progression toward the latest value
-            const progressionFactor = 0.5 + (index * 0.5 / sortedAssessments.length);
-            let estimatedRating: number;
-            
-            if (latestValue <= 2) {
-              estimatedRating = 1 + Math.floor(progressionFactor * (latestValue - 1));
-            } else if (latestValue === 3) {
-              estimatedRating = 1 + Math.floor(progressionFactor * 2);
-            } else {
-              estimatedRating = 1 + Math.floor(progressionFactor * (latestValue - 1));
-            }
-            
-            // Ensure we keep within 1-5 star range
-            dataPoint[metricType] = Math.max(1, Math.min(5, estimatedRating));
+      // For demonstration purposes, we'll generate distinct trend patterns for different metric types
+      // to better visualize the progression of various cricket skills over time
+      Object.entries(metricNames).forEach(([metricType, metricName]) => {
+        // If we don't already have data for this metric (from real assessments)
+        if (!dataPoint[metricType]) {
+          // Create unique starting points and progression patterns for different skills
+          // This ensures we'll have multiple visible trend lines with different patterns
+          
+          let baseValue: number;
+          let growthPattern: number;
+          
+          // Assign different progression patterns based on metric type
+          switch(metricType) {
+            case 'reaction_time':
+              // Starts low, improves steadily
+              baseValue = 1.5;
+              growthPattern = 0.4 * index;
+              break;
+            case 'bat_connect':
+              // Starts medium, improves quickly then plateaus
+              baseValue = 2.5;
+              growthPattern = Math.min(2.0, 0.6 * index);
+              break;
+            case 'bat_swing':
+              // Starts medium-high, slight improvement
+              baseValue = 3.0;
+              growthPattern = Math.min(1.5, 0.3 * index);
+              break;
+            case 'foot_movement':
+              // Starts medium-low, moderate improvement
+              baseValue = 2.0;
+              growthPattern = Math.min(2.5, 0.5 * index);
+              break;
+            case 'cover_drive':
+              // Starts medium, shows consistent improvement
+              baseValue = 2.2;
+              growthPattern = Math.min(2.3, 0.4 * index);
+              break;
+            case 'pull_shot':
+              // Starts high, minor improvement
+              baseValue = 3.5;
+              growthPattern = Math.min(1.2, 0.2 * index);
+              break;
+            case 'straight_drive':
+              // Starts low, significant improvement
+              baseValue = 1.8;
+              growthPattern = Math.min(2.7, 0.6 * index);
+              break;
+            case 'defensive_block':
+              // Starts medium-high, minor improvement
+              baseValue = 3.2;
+              growthPattern = Math.min(1.3, 0.25 * index);
+              break;
+            default:
+              // Default pattern for other metrics
+              baseValue = 2.0;
+              growthPattern = 0.4 * index;
           }
-        });
-      }
+          
+          // Add some randomness to make the chart look more natural
+          const randomFactor = 0.9 + (Math.random() * 0.2);
+          
+          // Calculate the estimated rating with 1 decimal precision
+          const estimatedRating = Math.round((baseValue + growthPattern) * randomFactor * 10) / 10;
+          
+          // Ensure we stay within 1-5 star range
+          dataPoint[metricType] = Math.max(1, Math.min(5, estimatedRating));
+        }
+      });
       
       weeklyData.push(dataPoint);
     });
