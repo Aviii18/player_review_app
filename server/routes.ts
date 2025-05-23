@@ -10,7 +10,8 @@ import {
   insertPerformanceAssessmentSchema, 
   insertPerformanceMetricSchema,
   insertProblemAreaSchema,
-  insertVideoSchema
+  insertVideoSchema,
+  insertPlayerSchema
 } from "@shared/schema";
 
 // Set up multer for handling video uploads
@@ -175,6 +176,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/players", async (_req: Request, res: Response) => {
     const players = await storage.getPlayers();
     res.json(players);
+  });
+  
+  // Create a new player
+  app.post("/api/players", async (req: Request, res: Response) => {
+    try {
+      const validatedData = insertPlayerSchema.parse(req.body);
+      const player = await storage.createPlayer(validatedData);
+      res.status(201).json(player);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid player data", errors: error.errors });
+      }
+      return res.status(500).json({ message: "Server error" });
+    }
   });
 
   // Get a specific player

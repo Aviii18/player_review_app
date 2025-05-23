@@ -39,7 +39,7 @@ const NewPlayerForm = () => {
   
   const createPlayerMutation = useMutation({
     mutationFn: async (data: InsertPlayer) => {
-      return apiRequest<Player>('/api/players', {
+      return apiRequest('/api/players', {
         method: 'POST',
         body: JSON.stringify(data)
       });
@@ -284,7 +284,7 @@ const PlayerList = () => {
   
   // Extract unique batch values for filter
   const batches = players 
-    ? ["All Batches", ...new Set(players.map(player => player.batch))]
+    ? ["All Batches", ...Array.from(new Set(players.map(player => player.batch)))]
     : ["All Batches"];
   
   return (
