@@ -39,10 +39,19 @@ const NewPlayerForm = () => {
   
   const createPlayerMutation = useMutation({
     mutationFn: async (data: InsertPlayer) => {
-      return apiRequest('/api/players', {
+      const response = await fetch('/api/players', {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
         body: JSON.stringify(data)
       });
+      
+      if (!response.ok) {
+        throw new Error('Failed to create player');
+      }
+      
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/players'] });
