@@ -17,7 +17,7 @@ import VideoPlayer from "@/components/VideoPlayer";
 import NotesList from "@/components/NotesList";
 import PerformanceChart from "@/components/PerformanceChart";
 import StarRating from "@/components/StarRating";
-import type { Player, PerformanceAssessment, PerformanceMetric, ProblemArea } from "@shared/schema";
+import type { Player, PerformanceAssessment, PerformanceMetric, ProblemArea, Video } from "@shared/schema";
 
 // Component to display an assessment history card
 const AssessmentHistoryCard = ({ assessment }: { assessment: PerformanceAssessment }) => {
@@ -309,6 +309,12 @@ const PlayerProfile = () => {
   const [newNote, setNewNote] = useState("");
   const [isAddingNote, setIsAddingNote] = useState(false);
   const [localProfileNotes, setLocalProfileNotes] = useState<Array<{date: string, author: string, content: string}>>([]);
+  
+  // State for video filters
+  const [shotTypeFilter, setShotTypeFilter] = useState("All");
+  const [ballSpeedFilter, setBallSpeedFilter] = useState("All");
+  const [batConnectFilter, setBatConnectFilter] = useState("All");
+  const [footworkFilter, setFootworkFilter] = useState("All");
 
   const { data: player, isLoading: isPlayerLoading } = useQuery<Player>({
     queryKey: [`/api/players/${playerId}`],
@@ -328,8 +334,14 @@ const PlayerProfile = () => {
     queryKey: [`/api/assessments/${latestAssessmentId}/metrics`],
     enabled: !isNaN(playerId) && latestAssessmentId !== undefined
   });
+  
+  // Fetch player videos
+  const { data: playerVideos = [], isLoading: isVideosLoading } = useQuery<Video[]>({
+    queryKey: [`/api/players/${playerId}/videos`],
+    enabled: !isNaN(playerId)
+  });
 
-  const isLoading = isPlayerLoading || isAssessmentsLoading || isMetricsLoading;
+  const isLoading = isPlayerLoading || isAssessmentsLoading || isMetricsLoading || isVideosLoading;
 
   // Function to handle adding a new note
   const handleAddNote = () => {
@@ -610,13 +622,224 @@ const PlayerProfile = () => {
                   </div>
 
                   <Separator className="my-4" />
-
-                  {/* Batting Stats section removed as requested */}
                 </div>
               </div>
             </CardContent>
           </Card>
         )
+      )}
+
+      {/* Video Library Section */}
+      {!isLoading && (
+        <Card className="mb-6">
+          <CardContent className="p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xl font-bold">Video Library</h3>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+              <div className="md:col-span-1 p-4 bg-gray-50 rounded-lg">
+                <h4 className="font-medium mb-3 text-sm text-gray-700">Filter Videos</h4>
+                
+                {/* Shot Type Filter */}
+                <div className="mb-2">
+                  <Label htmlFor="shot-type" className="block mb-1 text-xs">Shot Type</Label>
+                  <select
+                    id="shot-type"
+                    className="w-full px-2 py-1 text-sm border border-neutral-200 rounded"
+                    value={shotTypeFilter}
+                    onChange={(e) => setShotTypeFilter(e.target.value)}
+                  >
+                    <option value="All">All</option>
+                    <option value="Cover Drive">Cover Drive</option>
+                    <option value="Straight Drive">Straight Drive</option>
+                    <option value="Pull Shot">Pull Shot</option>
+                    <option value="Cut Shot">Cut Shot</option>
+                    <option value="Defensive">Defensive</option>
+                  </select>
+                </div>
+                
+                {/* Ball Speed Filter */}
+                <div className="mb-2">
+                  <Label htmlFor="ball-speed" className="block mb-1 text-xs">Ball Speed</Label>
+                  <select
+                    id="ball-speed"
+                    className="w-full px-2 py-1 text-sm border border-neutral-200 rounded"
+                    value={ballSpeedFilter}
+                    onChange={(e) => setBallSpeedFilter(e.target.value)}
+                  >
+                    <option value="All">All</option>
+                    <option value="Fast">Fast</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Slow">Slow</option>
+                  </select>
+                </div>
+                
+                {/* Bat Connect Filter */}
+                <div className="mb-2">
+                  <Label htmlFor="bat-connect" className="block mb-1 text-xs">Bat Connect</Label>
+                  <select
+                    id="bat-connect"
+                    className="w-full px-2 py-1 text-sm border border-neutral-200 rounded"
+                    value={batConnectFilter}
+                    onChange={(e) => setBatConnectFilter(e.target.value)}
+                  >
+                    <option value="All">All</option>
+                    <option value="Middle">Middle</option>
+                    <option value="Edge">Edge</option>
+                    <option value="Bottom">Bottom</option>
+                    <option value="Missed">Missed</option>
+                  </select>
+                </div>
+                
+                {/* Foot Movement Filter */}
+                <div className="mb-2">
+                  <Label htmlFor="footwork" className="block mb-1 text-xs">Foot Movement</Label>
+                  <select
+                    id="footwork"
+                    className="w-full px-2 py-1 text-sm border border-neutral-200 rounded"
+                    value={footworkFilter}
+                    onChange={(e) => setFootworkFilter(e.target.value)}
+                  >
+                    <option value="All">All</option>
+                    <option value="Good">Good</option>
+                    <option value="Average">Average</option>
+                    <option value="Poor">Poor</option>
+                  </select>
+                </div>
+              </div>
+              
+              <div className="md:col-span-3">
+                {playerVideos && playerVideos.length > 0 ? (
+                  <div className="flex overflow-x-auto gap-3 pb-2">
+                    {playerVideos.filter(video => {
+                      // Apply filters
+                      if (shotTypeFilter !== "All" && video.shotType !== shotTypeFilter) return false;
+                      if (ballSpeedFilter !== "All" && video.ballSpeed !== ballSpeedFilter) return false;
+                      if (batConnectFilter !== "All" && video.batConnect !== batConnectFilter) return false;
+                      return true;
+                    }).map((video) => (
+                      <div key={video.id} className="flex-shrink-0 w-48 border border-neutral-200 rounded overflow-hidden">
+                        <VideoPlayer 
+                          videoUrl={`/uploads/${video.url}`} 
+                          title={video.title}
+                          className="w-full"
+                          triggerClassName="w-full h-24 relative bg-gray-200"
+                          initialTags={{
+                            shotType: video.shotType || "",
+                            ballSpeed: video.ballSpeed || "",
+                            reactionTime: "",
+                            batConnect: video.batConnect || "",
+                            batSwing: ""
+                          }}
+                          onTagsUpdate={(tags) => {
+                            toast({
+                              title: "Video Tags Updated",
+                              description: "The tags for this video have been updated successfully."
+                            });
+                          }}
+                        />
+                        <div className="p-2">
+                          <div className="flex flex-wrap gap-1">
+                            {video.shotType && (
+                              <span className="text-xs bg-blue-100 text-blue-800 px-1 rounded">{video.shotType}</span>
+                            )}
+                            {video.ballSpeed && (
+                              <span className="text-xs bg-green-100 text-green-800 px-1 rounded">{video.ballSpeed} Ball</span>
+                            )}
+                            {video.batConnect && (
+                              <span className="text-xs bg-yellow-100 text-yellow-800 px-1 rounded">{video.batConnect} Connect</span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                    
+                    {/* Fallback for when all videos are filtered out */}
+                    {playerVideos.filter(video => {
+                      if (shotTypeFilter !== "All" && video.shotType !== shotTypeFilter) return false;
+                      if (ballSpeedFilter !== "All" && video.ballSpeed !== ballSpeedFilter) return false;
+                      if (batConnectFilter !== "All" && video.batConnect !== batConnectFilter) return false;
+                      return true;
+                    }).length === 0 && (
+                      <div className="w-full text-center py-8">
+                        <p className="text-gray-500">No videos match your filter criteria. Try adjusting your filters.</p>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="flex overflow-x-auto gap-3 pb-2">
+                    <div className="flex-shrink-0 w-48 border border-neutral-200 rounded overflow-hidden">
+                      <VideoPlayer 
+                        videoUrl="/videos/Video 1.mp4" 
+                        title="Cover Drive Practice"
+                        className="w-full"
+                        triggerClassName="w-full h-24 relative bg-gray-200"
+                        initialTags={{
+                          shotType: "Cover Drive",
+                          ballSpeed: "Medium",
+                          reactionTime: "Fast",
+                          batConnect: "Middle",
+                          batSwing: "Good"
+                        }}
+                      />
+                      <div className="p-2">
+                        <div className="flex flex-wrap gap-1">
+                          <span className="text-xs bg-blue-100 text-blue-800 px-1 rounded">Cover Drive</span>
+                          <span className="text-xs bg-green-100 text-green-800 px-1 rounded">Medium Ball</span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="flex-shrink-0 w-48 border border-neutral-200 rounded overflow-hidden">
+                      <VideoPlayer 
+                        videoUrl="/videos/Video 2.mp4" 
+                        title="Pull Shot Practice"
+                        className="w-full"
+                        triggerClassName="w-full h-24 relative bg-gray-200"
+                        initialTags={{
+                          shotType: "Pull Shot",
+                          ballSpeed: "Fast",
+                          reactionTime: "Fast",
+                          batConnect: "Middle",
+                          batSwing: "Good"
+                        }}
+                      />
+                      <div className="p-2">
+                        <div className="flex flex-wrap gap-1">
+                          <span className="text-xs bg-blue-100 text-blue-800 px-1 rounded">Pull Shot</span>
+                          <span className="text-xs bg-green-100 text-green-800 px-1 rounded">Fast Ball</span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="flex-shrink-0 w-48 border border-neutral-200 rounded overflow-hidden">
+                      <VideoPlayer 
+                        videoUrl="/videos/Video 3.mp4" 
+                        title="Off Drive Practice"
+                        className="w-full"
+                        triggerClassName="w-full h-24 relative bg-gray-200"
+                        initialTags={{
+                          shotType: "Off Drive",
+                          ballSpeed: "Slow",
+                          reactionTime: "Slow",
+                          batConnect: "Edge",
+                          batSwing: "Average"
+                        }}
+                      />
+                      <div className="p-2">
+                        <div className="flex flex-wrap gap-1">
+                          <span className="text-xs bg-blue-100 text-blue-800 px-1 rounded">Off Drive</span>
+                          <span className="text-xs bg-green-100 text-green-800 px-1 rounded">Slow Ball</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       )}
 
       {/* Performance Progression Chart */}
