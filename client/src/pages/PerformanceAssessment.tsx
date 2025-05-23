@@ -405,6 +405,36 @@ const PerformanceAssessment = () => {
                         <option value="Missed">Missed</option>
                       </select>
                     </div>
+                    
+                    {/* Foot Movement Filter */}
+                    <div className="mb-2">
+                      <Label htmlFor="footwork" className="block mb-1 text-xs">Foot Movement</Label>
+                      <select
+                        id="footwork"
+                        className="w-full px-2 py-1 text-sm border border-neutral-200 rounded"
+                        value={footworkFilter}
+                        onChange={(e) => setFootworkFilter(e.target.value)}
+                      >
+                        <option value="All">All</option>
+                        <option value="Good">Good</option>
+                        <option value="Average">Average</option>
+                        <option value="Poor">Poor</option>
+                      </select>
+                    </div>
+                    
+                    {/* Session Filter */}
+                    <div className="mb-2">
+                      <Label htmlFor="session" className="block mb-1 text-xs">Session</Label>
+                      <select
+                        id="session"
+                        className="w-full px-2 py-1 text-sm border border-neutral-200 rounded"
+                      >
+                        <option value="All">All</option>
+                        <option value="Morning">Morning</option>
+                        <option value="Afternoon">Afternoon</option>
+                        <option value="Evening">Evening</option>
+                      </select>
+                    </div>
                   </div>
                 </div>
 
@@ -637,11 +667,22 @@ const PerformanceAssessment = () => {
                                 className={`px-3 py-1 rounded text-sm font-medium ${area.rating === 1 ? 'bg-red-500 text-white' : 'bg-gray-200 text-gray-700'}`}
                                 onClick={() => {
                                   const updatedAreas = [...shotSpecificAreas];
-                                  updatedAreas[index].rating = area.rating === 1 ? 0 : 1;
+                                  updatedAreas[index].rating = 1;
                                   setShotSpecificAreas(updatedAreas);
                                 }}
                               >
                                 Needs Work
+                              </button>
+                              <button
+                                type="button"
+                                className={`px-3 py-1 rounded text-sm font-medium ${area.rating === 2 ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-700'}`}
+                                onClick={() => {
+                                  const updatedAreas = [...shotSpecificAreas];
+                                  updatedAreas[index].rating = 2;
+                                  setShotSpecificAreas(updatedAreas);
+                                }}
+                              >
+                                Good
                               </button>
                             </div>
                           </div>
