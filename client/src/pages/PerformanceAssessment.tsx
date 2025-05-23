@@ -503,7 +503,12 @@ const PerformanceAssessment = () => {
                         triggerClassName="w-full h-24 relative"
                       />
                       <div className="p-2">
-                        <h5 className="font-medium text-sm">Cut Shot Training</h5>
+                        <div className="flex flex-wrap gap-1">
+                          <span className="text-xs bg-blue-100 text-blue-800 px-1 rounded">Straight drive</span>
+                          <span className="text-xs bg-green-100 text-green-800 px-1 rounded">Medium Ball</span>
+                          <span className="text-xs bg-yellow-100 text-yellow-800 px-1 rounded">Slow Reaction</span>
+                          <span className="text-xs bg-red-100 text-red-800 px-1 rounded">Poor Footwork</span>
+                        </div>
                       </div>
                     </div>
                   </div>
