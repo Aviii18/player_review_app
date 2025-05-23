@@ -459,7 +459,16 @@ const PlayerProfile = () => {
             <CardContent className="p-0">
               <div className="md:flex">
                 <div className="md:w-1/3 bg-neutral-200">
-                  <img src={player.image} alt={player.name} className="w-full h-full object-cover" />
+                  {player.photoUrl ? (
+                    <img src={player.photoUrl} alt={player.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                      </svg>
+                    </div>
+                  )}
                 </div>
                 <div className="p-6 md:w-2/3">
                   <div>
@@ -467,7 +476,7 @@ const PlayerProfile = () => {
                       <div>
                         <h2 className="font-bold text-2xl">{player.name}</h2>
                         <p className="text-neutral-300 mb-2">{player.batch} - Advanced</p>
-                        <div className="flex space-x-4 text-sm">
+                        <div className="flex flex-wrap gap-4 text-sm">
                           <div>
                             <span className="font-bold">Age:</span> {player.age || "N/A"}
                           </div>
@@ -477,6 +486,21 @@ const PlayerProfile = () => {
                           <div>
                             <span className="font-bold">Dominant Hand:</span> {player.dominantHand || "N/A"}
                           </div>
+                          {player.battingStyle && (
+                            <div>
+                              <span className="font-bold">Batting:</span> {player.battingStyle}
+                            </div>
+                          )}
+                          {player.bowlingStyle && (
+                            <div>
+                              <span className="font-bold">Bowling:</span> {player.bowlingStyle}
+                            </div>
+                          )}
+                          {player.specialization && (
+                            <div>
+                              <span className="font-bold">Specialization:</span> {player.specialization}
+                            </div>
+                          )}
                         </div>
                       </div>
                       <Link href={`/players/${player.id}/assessment`}>

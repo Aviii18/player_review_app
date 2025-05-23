@@ -49,7 +49,16 @@ const PlayerCard = ({ player }: PlayerCardProps) => {
     <Link href={`/players/${player.id}`}>
       <div className="bg-white rounded-lg shadow-md overflow-hidden player-card cursor-pointer hover:translate-y-[-5px] transition-transform duration-200">
         <div className="relative h-48 bg-neutral-200">
-          <img src={player.image} alt={player.name} className="w-full h-full object-cover" />
+          {player.photoUrl ? (
+            <img src={player.photoUrl} alt={player.name} className="w-full h-full object-cover" />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center">
+              <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+            </div>
+          )}
           <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-3">
             <span className="inline-block bg-secondary text-white text-xs font-bold px-2 py-1 rounded">{player.batch}</span>
           </div>
