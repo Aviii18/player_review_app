@@ -584,11 +584,11 @@ const PerformanceAssessment = () => {
                 
 
                 
-                {/* Session Notes */}
+                {/* Assessment Notes */}
                 <div className="mb-6">
-                  <Label htmlFor="session-notes" className="block mb-2 font-medium">Session Notes</Label>
+                  <Label htmlFor="assessment-notes" className="block mb-2 font-medium">Assessment Notes</Label>
                   <Textarea 
-                    id="session-notes"
+                    id="assessment-notes"
                     className="w-full px-3 py-2 border border-neutral-200 rounded h-24"
                     placeholder="Enter overall session notes, observations, and feedback..."
                     value={sessionNotes}

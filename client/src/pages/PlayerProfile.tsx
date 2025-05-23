@@ -98,7 +98,7 @@ const AssessmentHistoryCard = ({ assessment }: { assessment: PerformanceAssessme
           <TabsList className="mb-4">
             <TabsTrigger value="general">General Performance Areas</TabsTrigger>
             <TabsTrigger value="shots">Shot Specific Areas</TabsTrigger>
-            <TabsTrigger value="session">Session Notes</TabsTrigger>
+            <TabsTrigger value="session">Assessment Notes</TabsTrigger>
           </TabsList>
           
           {/* General Performance Areas Tab */}
@@ -281,10 +281,10 @@ const AssessmentHistoryCard = ({ assessment }: { assessment: PerformanceAssessme
             </div>
           </TabsContent>
           
-          {/* Session Notes Tab */}
+          {/* Assessment Notes Tab */}
           <TabsContent value="session">
             <div className="border-2 border-primary/10 rounded-lg p-4 bg-primary/5">
-              <h3 className="text-lg font-bold mb-3 text-primary">Session Notes</h3>
+              <h3 className="text-lg font-bold mb-3 text-primary">Assessment Notes</h3>
               <div className="p-4 bg-white border border-neutral-200 rounded">
                 {assessment.notes ? (
                   <p className="whitespace-pre-line">{assessment.notes}</p>
