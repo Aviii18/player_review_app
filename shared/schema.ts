@@ -17,11 +17,19 @@ export const players = pgTable("players", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
   batch: text("batch").notNull(),
-  image: text("image").notNull(),
-  joinedDate: timestamp("joined_date").notNull(),
+  photoUrl: text("photo_url"),
+  dateOfBirth: text("date_of_birth"),
   age: integer("age"),
+  bio: text("bio"),
+  battingStyle: text("batting_style"),
+  bowlingStyle: text("bowling_style"),
+  specialization: text("specialization"),
+  yearsOfExperience: integer("years_experience"),
+  height: text("height"),
+  weight: text("weight"),
   dominantHand: text("dominant_hand"),
   status: text("status"), // "improving", "stable", "needs focus"
+  joinedDate: timestamp("joined_date").defaultNow(),
 });
 
 export const insertPlayerSchema = createInsertSchema(players).omit({ id: true });
