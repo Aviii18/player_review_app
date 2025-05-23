@@ -426,7 +426,7 @@ const PlayerProfile = () => {
                   <img src={player.image} alt={player.name} className="w-full h-full object-cover" />
                 </div>
                 <div className="p-6 md:w-2/3">
-                  <div className="flex justify-between items-start">
+                  <div>
                     <div>
                       <h2 className="font-bold text-2xl">{player.name}</h2>
                       <p className="text-neutral-300 mb-2">{player.batch} - Advanced</p>
@@ -442,81 +442,125 @@ const PlayerProfile = () => {
                         </div>
                       </div>
                     </div>
-                    <div className="flex flex-col space-y-4">
-                      <div className="flex justify-between items-start">
-                        <h3 className="text-lg font-bold mb-2">Profile Notes</h3>
-                        <div className="flex space-x-2">
-                          <Dialog open={isAddingNote} onOpenChange={setIsAddingNote}>
-                            <DialogTrigger asChild>
-                              <Button variant="outline" className="flex items-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1">
-                                  <path d="M12 5v14M5 12h14"></path>
-                                </svg>
-                                Add Note
-                              </Button>
-                            </DialogTrigger>
-                            <DialogContent>
-                              <DialogHeader>
-                                <DialogTitle>Add Player Note</DialogTitle>
-                                <DialogDescription>
-                                  Add a coaching note to {player.name}'s profile. This will be visible to all coaches.
-                                </DialogDescription>
-                              </DialogHeader>
-                              <div className="py-4">
-                                <Label htmlFor="note" className="text-sm font-medium mb-2 block">
-                                  Note Content
-                                </Label>
-                                <Textarea
-                                  id="note"
-                                  placeholder="Enter your coaching observations, technical feedback, or drill recommendations..."
-                                  className="h-32"
-                                  value={newNote}
-                                  onChange={(e) => setNewNote(e.target.value)}
-                                />
-                              </div>
-                              <DialogFooter>
-                                <Button 
-                                  variant="outline" 
-                                  onClick={() => setIsAddingNote(false)}
-                                >
-                                  Cancel
-                                </Button>
-                                <Button onClick={handleAddNote}>
-                                  Save Note
-                                </Button>
-                              </DialogFooter>
-                            </DialogContent>
-                          </Dialog>
-                          
-                          <Link href={`/players/${player.id}/assessment`}>
-                            <Button className="bg-secondary text-white px-4 py-2 rounded-lg flex items-center">
+                    
+                    <Separator className="my-4" />
+                    
+                    {/* Profile Notes Section */}
+                    <div className="mt-4">
+                      <div className="flex justify-between items-center mb-3">
+                        <h3 className="text-lg font-bold">Coach Notes</h3>
+                        <Dialog open={isAddingNote} onOpenChange={setIsAddingNote}>
+                          <DialogTrigger asChild>
+                            <Button variant="outline" className="flex items-center">
                               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1">
-                                <path d="M5 12h14"></path>
-                                <path d="M12 5v14"></path>
+                                <path d="M12 5v14M5 12h14"></path>
                               </svg>
-                              <span>New Assessment</span>
+                              Add Note
                             </Button>
-                          </Link>
-                        </div>
+                          </DialogTrigger>
+                          <DialogContent>
+                            <DialogHeader>
+                              <DialogTitle>Add Player Note</DialogTitle>
+                              <DialogDescription>
+                                Add a coaching note to {player.name}'s profile. This will be visible to all coaches.
+                              </DialogDescription>
+                            </DialogHeader>
+                            <div className="py-4">
+                              <Label htmlFor="note" className="text-sm font-medium mb-2 block">
+                                Note Content
+                              </Label>
+                              <Textarea
+                                id="note"
+                                placeholder="Enter your coaching observations, technical feedback, or drill recommendations..."
+                                className="h-32"
+                                value={newNote}
+                                onChange={(e) => setNewNote(e.target.value)}
+                              />
+                            </div>
+                            <DialogFooter>
+                              <Button 
+                                variant="outline" 
+                                onClick={() => setIsAddingNote(false)}
+                              >
+                                Cancel
+                              </Button>
+                              <Button onClick={handleAddNote}>
+                                Save Note
+                              </Button>
+                            </DialogFooter>
+                          </DialogContent>
+                        </Dialog>
                       </div>
                       
-                      <div className="border border-neutral-200 rounded-lg p-4">
-                        {profileNotes.length > 0 ? (
-                          <div className="space-y-4">
-                            {profileNotes.map((note, index) => (
-                              <div key={index} className="border-b border-neutral-100 pb-3 last:border-0 last:pb-0">
-                                <div className="flex justify-between items-center mb-1">
-                                  <span className="font-medium text-primary">{note.author}</span>
-                                  <span className="text-sm text-neutral-500">{note.date}</span>
-                                </div>
-                                <p className="text-sm">{note.content}</p>
+                      {/* Show only latest note by default */}
+                      {profileNotes.length > 0 ? (
+                        <Collapsible className="w-full">
+                          <div className="border border-neutral-200 rounded-lg p-4 bg-neutral-50">
+                            {/* Latest Note (always visible) */}
+                            <div className="border-b border-neutral-100 pb-3 mb-2">
+                              <div className="flex justify-between items-center mb-1">
+                                <span className="font-medium text-primary">{profileNotes[0].author}</span>
+                                <span className="text-sm text-neutral-500">{profileNotes[0].date}</span>
                               </div>
-                            ))}
+                              <p className="text-sm">{profileNotes[0].content}</p>
+                            </div>
+                            
+                            {/* Show more notes button (only if there are more notes) */}
+                            {profileNotes.length > 1 && (
+                              <CollapsibleTrigger asChild>
+                                <Button variant="ghost" size="sm" className="w-full text-sm">
+                                  <span>View {profileNotes.length - 1} more notes</span>
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="16"
+                                    height="16"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    className="ml-2"
+                                  >
+                                    <path d="m6 9 6 6 6-6" />
+                                  </svg>
+                                </Button>
+                              </CollapsibleTrigger>
+                            )}
+                            
+                            {/* More notes (collapsed by default) */}
+                            <CollapsibleContent>
+                              <div className="space-y-4 pt-2">
+                                {profileNotes.slice(1).map((note, index) => (
+                                  <div key={index} className="border-b border-neutral-100 pb-3 last:border-0 last:pb-0">
+                                    <div className="flex justify-between items-center mb-1">
+                                      <span className="font-medium text-primary">{note.author}</span>
+                                      <span className="text-sm text-neutral-500">{note.date}</span>
+                                    </div>
+                                    <p className="text-sm">{note.content}</p>
+                                  </div>
+                                ))}
+                              </div>
+                            </CollapsibleContent>
                           </div>
-                        ) : (
-                          <p className="text-center text-neutral-500 py-4">No notes yet. Add the first note to track this player's progress.</p>
-                        )}
-                      </div>
+                        </Collapsible>
+                      ) : (
+                        <div className="border border-neutral-200 rounded-lg p-4 bg-neutral-50">
+                          <p className="text-center text-neutral-500 py-2">No notes yet. Add the first note to track this player's progress.</p>
+                        </div>
+                      )}
+                    </div>
+                    
+                    <div className="mt-4 flex justify-end">
+                      <Link href={`/players/${player.id}/assessment`}>
+                        <Button className="bg-secondary text-white px-4 py-2 rounded-lg flex items-center">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1">
+                            <path d="M5 12h14"></path>
+                            <path d="M12 5v14"></path>
+                          </svg>
+                          <span>New Assessment</span>
+                        </Button>
+                      </Link>
                     </div>
                   </div>
 
