@@ -367,30 +367,7 @@ const PlayerProfile = () => {
 
                   <Separator className="my-4" />
 
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <h3 className="font-bold text-lg">Batting Stats</h3>
-                      <div className="grid grid-cols-2 gap-2 mt-2">
-                        <div className="bg-primary/10 p-3 rounded">
-                          <p className="text-xs text-neutral-600 font-medium">Avg. Reaction Time</p>
-                          <p className="font-mono font-bold">0.72s</p>
-                        </div>
-                        <div className="bg-primary/10 p-3 rounded">
-                          <p className="text-xs text-neutral-600 font-medium">Bat Connect %</p>
-                          <p className="font-mono font-bold">87%</p>
-                        </div>
-                        <div className="bg-primary/10 p-3 rounded">
-                          <p className="text-xs text-neutral-600 font-medium">Bat Swing</p>
-                          <p className="font-mono font-bold">82%</p>
-                        </div>
-                        <div className="bg-primary/10 p-3 rounded">
-                          <p className="text-xs text-neutral-600 font-medium">Foot Movement Score</p>
-                          <p className="font-mono font-bold">7.5/10</p>
-                        </div>
-                      </div>
-                    </div>
-                    {/* Current Focus Areas section removed as requested */}
-                  </div>
+                  {/* Batting Stats section removed as requested */}
                 </div>
               </div>
             </CardContent>
