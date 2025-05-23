@@ -105,6 +105,72 @@ export async function registerRoutes(app: Express): Promise<Server> {
       stream.pipe(res);
     }
   });
+  
+  // Serve video assets from attached_assets folder
+  app.get('/videos/:filename', (req: Request, res: Response) => {
+    const filename = req.params.filename;
+    const videoPath = path.join(process.cwd(), 'attached_assets', filename);
+    
+    console.log('Serving video from attached_assets:', videoPath);
+    
+    // Check if file exists first
+    if (!fs.existsSync(videoPath)) {
+      console.error('Video file not found:', videoPath);
+      return res.status(404).send('Video not found');
+    }
+    
+    // Stream video instead of sending the whole file
+    const stat = fs.statSync(videoPath);
+    const fileSize = stat.size;
+    const range = req.headers.range;
+    
+    if (range) {
+      // Handle range requests for video streaming
+      const parts = range.replace(/bytes=/, "").split("-");
+      const start = parseInt(parts[0], 10);
+      const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
+      
+      const chunksize = (end - start) + 1;
+      const file = fs.createReadStream(videoPath, { start, end });
+      
+      const headers = {
+        'Content-Range': `bytes ${start}-${end}/${fileSize}`,
+        'Accept-Ranges': 'bytes',
+        'Content-Length': chunksize,
+        'Content-Type': 'video/mp4',
+      };
+      
+      res.writeHead(206, headers);
+      file.pipe(res);
+      
+      file.on('error', (err) => {
+        console.error('Error streaming video:', err);
+        // Don't try to send headers if they're already sent
+        if (!res.headersSent) {
+          res.status(500).send('Error streaming video');
+        }
+      });
+    } else {
+      // Send entire file
+      const headers = {
+        'Content-Length': fileSize,
+        'Content-Type': 'video/mp4',
+      };
+      
+      res.writeHead(200, headers);
+      
+      const stream = fs.createReadStream(videoPath);
+      stream.on('error', (err) => {
+        console.error('Error streaming video:', err);
+        // Don't try to send headers if they're already sent
+        if (!res.headersSent) {
+          res.status(500).send('Error streaming video');
+        }
+      });
+      
+      stream.pipe(res);
+    }
+  });
   // Get all players
   app.get("/api/players", async (_req: Request, res: Response) => {
     const players = await storage.getPlayers();

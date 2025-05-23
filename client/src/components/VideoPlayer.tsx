@@ -20,32 +20,20 @@ const VideoPlayer = ({ videoUrl, title, thumbnail, className, triggerClassName }
   };
 
   useEffect(() => {
-    // Only generate thumbnail if not provided and it's a local video
-    if (!thumbnail && isLocalVideo(videoUrl)) {
-      const video = document.createElement('video');
-      video.src = videoUrl;
-      video.crossOrigin = "anonymous";
-      video.preload = "metadata";
-      
-      video.onloadeddata = () => {
-        // Move to 25% through the video to get a more representative frame
-        video.currentTime = video.duration * 0.25;
+    // Simply use a generic cricket shot image for thumbnails
+    if (!thumbnail) {
+      // Set color-coded thumbnails instead of trying to generate them
+      const colors = {
+        'Video 1.mp4': 'bg-blue-500',
+        'Video 2.mp4': 'bg-green-500',
+        'Video 3.mp4': 'bg-yellow-500',
+        'Video 4.mp4': 'bg-red-500',
       };
       
-      video.onseeked = () => {
-        const canvas = document.createElement('canvas');
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        
-        const ctx = canvas.getContext('2d');
-        if (ctx) {
-          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-          const dataUrl = canvas.toDataURL('image/jpeg');
-          setThumbnailUrl(dataUrl);
-        }
-        
-        video.remove();
-      };
+      const fileName = videoUrl.split('/').pop() || '';
+      setThumbnailUrl(`data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="150" viewBox="0 0 300 150"><rect width="300" height="150" fill="${
+        fileName in colors ? colors[fileName].replace('#', '%23') : '%23cccccc'
+      }"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="Arial" font-size="24" fill="white">Cricket Training</text></svg>`);
     }
   }, [videoUrl, thumbnail]);
 

@@ -447,9 +447,9 @@ const PerformanceAssessment = () => {
                     <div className="flex-shrink-0 w-48 border border-neutral-200 rounded overflow-hidden">
                       <VideoPlayer 
                         videoUrl="/videos/Video 1.mp4" 
-                        title="Cover Drive Technique"
+                        title="Training Video 1"
                         className="w-full"
-                        triggerClassName="w-full h-24 relative"
+                        triggerClassName="w-full h-24 relative bg-gray-200"
                       />
                       <div className="p-2">
                         <div className="flex flex-wrap gap-1">
@@ -464,9 +464,9 @@ const PerformanceAssessment = () => {
                     <div className="flex-shrink-0 w-48 border border-neutral-200 rounded overflow-hidden">
                       <VideoPlayer 
                         videoUrl="/videos/Video 2.mp4" 
-                        title="Pull Shot Practice"
+                        title="Training Video 2"
                         className="w-full"
-                        triggerClassName="w-full h-24 relative"
+                        triggerClassName="w-full h-24 relative bg-gray-200"
                       />
                       <div className="p-2">
                         <div className="flex flex-wrap gap-1">
@@ -481,9 +481,9 @@ const PerformanceAssessment = () => {
                     <div className="flex-shrink-0 w-48 border border-neutral-200 rounded overflow-hidden">
                       <VideoPlayer 
                         videoUrl="/videos/Video 3.mp4" 
-                        title="Sweep Shot Technique"
+                        title="Training Video 3"
                         className="w-full"
-                        triggerClassName="w-full h-24 relative"
+                        triggerClassName="w-full h-24 relative bg-gray-200"
                       />
                       <div className="p-2">
                         <div className="flex flex-wrap gap-1">
@@ -498,9 +498,9 @@ const PerformanceAssessment = () => {
                     <div className="flex-shrink-0 w-48 border border-neutral-200 rounded overflow-hidden">
                       <VideoPlayer 
                         videoUrl="/videos/Video 4.mp4" 
-                        title="Cut Shot Training"
+                        title="Training Video 4"
                         className="w-full"
-                        triggerClassName="w-full h-24 relative"
+                        triggerClassName="w-full h-24 relative bg-gray-200"
                       />
                       <div className="p-2">
                         <div className="flex flex-wrap gap-1">
