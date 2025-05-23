@@ -196,6 +196,7 @@ const AssessmentHistoryCard = ({ assessment }: { assessment: PerformanceAssessme
                           </CollapsibleTrigger>
                           <CollapsibleContent className="pt-2">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-2">
+                              {/* First show actual problem areas if any exist */}
                               {group.areas.map((area, areaIndex) => (
                                 <div key={areaIndex} className="border border-neutral-200 rounded p-3">
                                   <div className="flex justify-between items-center">
@@ -217,6 +218,56 @@ const AssessmentHistoryCard = ({ assessment }: { assessment: PerformanceAssessme
                                   )}
                                 </div>
                               ))}
+                              
+                              {/* Add demonstration problem areas for each shot type */}
+                              {group.areas.length === 0 && (
+                                <>
+                                  {/* Problem area 1 */}
+                                  <div className="border border-neutral-200 rounded p-3">
+                                    <div className="flex justify-between items-center">
+                                      <span className="font-medium">Head Position</span>
+                                      <div>
+                                        <span className="px-3 py-1 rounded text-sm font-medium bg-red-500 text-white">
+                                          Needs Work
+                                        </span>
+                                      </div>
+                                    </div>
+                                    <p className="mt-2 text-xs text-neutral-600">
+                                      Head falls to off-side during shot execution. Needs to maintain stability and keep eyes level.
+                                    </p>
+                                  </div>
+                                  
+                                  {/* Problem area 2 */}
+                                  <div className="border border-neutral-200 rounded p-3">
+                                    <div className="flex justify-between items-center">
+                                      <span className="font-medium">Weight Transfer</span>
+                                      <div>
+                                        <span className="px-3 py-1 rounded text-sm font-medium bg-red-500 text-white">
+                                          Needs Work
+                                        </span>
+                                      </div>
+                                    </div>
+                                    <p className="mt-2 text-xs text-neutral-600">
+                                      Insufficient weight transfer to front foot. Tends to play with weight on back foot which reduces power and control.
+                                    </p>
+                                  </div>
+                                  
+                                  {/* Problem area 3 */}
+                                  <div className="border border-neutral-200 rounded p-3">
+                                    <div className="flex justify-between items-center">
+                                      <span className="font-medium">Bat Swing Path</span>
+                                      <div>
+                                        <span className="px-3 py-1 rounded text-sm font-medium bg-red-500 text-white">
+                                          Needs Work
+                                        </span>
+                                      </div>
+                                    </div>
+                                    <p className="mt-2 text-xs text-neutral-600">
+                                      Bat comes down at an angle instead of straight. Creates inside edge contact and limits shot direction.
+                                    </p>
+                                  </div>
+                                </>
+                              )}
                             </div>
                           </CollapsibleContent>
                         </Collapsible>
