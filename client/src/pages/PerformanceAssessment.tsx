@@ -450,6 +450,53 @@ const PerformanceAssessment = () => {
               <CardContent>
 
                 
+                {/* Training Videos Carousel */}
+                <div className="mb-6">
+                  <h4 className="font-medium mb-3">Training Videos</h4>
+                  <div className="grid grid-cols-2 gap-4 mb-4">
+                    <div className="border border-neutral-200 rounded overflow-hidden cursor-pointer hover:border-primary transition">
+                      <VideoPlayer 
+                        videoUrl="/videos/Video 1.mp4" 
+                        title="Cover Drive Technique"
+                        className="w-full"
+                      />
+                      <div className="p-2">
+                        <h5 className="font-medium text-sm">Cover Drive Technique</h5>
+                      </div>
+                    </div>
+                    <div className="border border-neutral-200 rounded overflow-hidden cursor-pointer hover:border-primary transition">
+                      <VideoPlayer 
+                        videoUrl="/videos/Video 2.mp4" 
+                        title="Pull Shot Practice"
+                        className="w-full"
+                      />
+                      <div className="p-2">
+                        <h5 className="font-medium text-sm">Pull Shot Practice</h5>
+                      </div>
+                    </div>
+                    <div className="border border-neutral-200 rounded overflow-hidden cursor-pointer hover:border-primary transition">
+                      <VideoPlayer 
+                        videoUrl="/videos/Video 3.mp4" 
+                        title="Sweep Shot Technique"
+                        className="w-full"
+                      />
+                      <div className="p-2">
+                        <h5 className="font-medium text-sm">Sweep Shot Technique</h5>
+                      </div>
+                    </div>
+                    <div className="border border-neutral-200 rounded overflow-hidden cursor-pointer hover:border-primary transition">
+                      <VideoPlayer 
+                        videoUrl="/videos/Video 4.mp4" 
+                        title="Cut Shot Training"
+                        className="w-full"
+                      />
+                      <div className="p-2">
+                        <h5 className="font-medium text-sm">Cut Shot Training</h5>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
                 {/* Session Notes */}
                 <div className="mb-6">
                   <Label htmlFor="session-notes" className="block mb-2 font-medium">Session Notes</Label>
@@ -462,120 +509,6 @@ const PerformanceAssessment = () => {
                   />
                 </div>
 
-                {/* Video Player */}
-                {selectedVideo ? (
-                  <div className="mb-6">
-                    <div className="aspect-w-16 aspect-h-9 mb-2">
-                      <VideoPlayer 
-                        videoUrl={selectedVideo.url} 
-                        title={selectedVideo.title} 
-                        className="w-full"
-                      />
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <h4 className="font-bold">{selectedVideo.title}</h4>
-                      {isTaggingMode ? (
-                        <div className="flex space-x-2">
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            onClick={() => setIsTaggingMode(false)}
-                          >
-                            Cancel
-                          </Button>
-                          <Button 
-                            size="sm"
-                            onClick={saveVideoTags}
-                          >
-                            Save Tags
-                          </Button>
-                        </div>
-                      ) : (
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={startTaggingMode}
-                        >
-                          Edit Tags
-                        </Button>
-                      )}
-                    </div>
-                    
-                    {isTaggingMode && (
-                      <div className="grid grid-cols-2 gap-3 mt-3">
-                        <div>
-                          <Label htmlFor="tag-shotType" className="block mb-1 text-xs">Shot Type</Label>
-                          <select
-                            id="tag-shotType"
-                            className="w-full px-2 py-1 text-sm border border-neutral-200 rounded"
-                            value={videoTags.shotType}
-                            onChange={(e) => updateVideoTag('shotType', e.target.value)}
-                          >
-                            <option value="">-- Select --</option>
-                            <option value="Cover Drive">Cover Drive</option>
-                            <option value="Straight Drive">Straight Drive</option>
-                            <option value="Pull Shot">Pull Shot</option>
-                            <option value="Cut Shot">Cut Shot</option>
-                            <option value="Sweep Shot">Sweep Shot</option>
-                          </select>
-                        </div>
-                        <div>
-                          <Label htmlFor="tag-ballLength" className="block mb-1 text-xs">Ball Length</Label>
-                          <select
-                            id="tag-ballLength"
-                            className="w-full px-2 py-1 text-sm border border-neutral-200 rounded"
-                            value={videoTags.ballLength}
-                            onChange={(e) => updateVideoTag('ballLength', e.target.value)}
-                          >
-                            <option value="">-- Select --</option>
-                            <option value="Full">Full</option>
-                            <option value="Good">Good</option>
-                            <option value="Short">Short</option>
-                            <option value="Yorker">Yorker</option>
-                          </select>
-                        </div>
-                        <div>
-                          <Label htmlFor="tag-ballSpeed" className="block mb-1 text-xs">Ball Speed</Label>
-                          <select
-                            id="tag-ballSpeed"
-                            className="w-full px-2 py-1 text-sm border border-neutral-200 rounded"
-                            value={videoTags.ballSpeed}
-                            onChange={(e) => updateVideoTag('ballSpeed', e.target.value)}
-                          >
-                            <option value="">-- Select --</option>
-                            <option value="Fast">Fast</option>
-                            <option value="Medium">Medium</option>
-                            <option value="Slow">Slow</option>
-                          </select>
-                        </div>
-                        <div>
-                          <Label htmlFor="tag-batConnect" className="block mb-1 text-xs">Bat Connect</Label>
-                          <select
-                            id="tag-batConnect"
-                            className="w-full px-2 py-1 text-sm border border-neutral-200 rounded"
-                            value={videoTags.batConnect}
-                            onChange={(e) => updateVideoTag('batConnect', e.target.value)}
-                          >
-                            <option value="">-- Select --</option>
-                            <option value="Middle">Middle</option>
-                            <option value="Edge">Edge</option>
-                            <option value="Bottom">Bottom</option>
-                            <option value="Missed">Missed</option>
-                          </select>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <div className="mb-6 flex items-center justify-center border border-dashed border-neutral-300 rounded-lg h-48 bg-neutral-50">
-                    <div className="text-center">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 mx-auto text-neutral-400 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                      </svg>
-                      <p className="text-neutral-500">Select a video from the library to analyze</p>
-                    </div>
-                  </div>
-                )}
 
                 <div className="grid grid-cols-1 gap-6">
                   {/* General Performance Areas */}
