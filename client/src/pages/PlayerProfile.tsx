@@ -449,20 +449,31 @@ const PlayerProfile = () => {
                 </div>
                 <div className="p-6 md:w-2/3">
                   <div>
-                    <div>
-                      <h2 className="font-bold text-2xl">{player.name}</h2>
-                      <p className="text-neutral-300 mb-2">{player.batch} - Advanced</p>
-                      <div className="flex space-x-4 text-sm">
-                        <div>
-                          <span className="font-bold">Age:</span> {player.age || "N/A"}
-                        </div>
-                        <div>
-                          <span className="font-bold">Joined:</span> {player.joinedDate ? format(new Date(player.joinedDate), "MMM dd, yyyy") : "N/A"}
-                        </div>
-                        <div>
-                          <span className="font-bold">Dominant Hand:</span> {player.dominantHand || "N/A"}
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h2 className="font-bold text-2xl">{player.name}</h2>
+                        <p className="text-neutral-300 mb-2">{player.batch} - Advanced</p>
+                        <div className="flex space-x-4 text-sm">
+                          <div>
+                            <span className="font-bold">Age:</span> {player.age || "N/A"}
+                          </div>
+                          <div>
+                            <span className="font-bold">Joined:</span> {player.joinedDate ? format(new Date(player.joinedDate), "MMM dd, yyyy") : "N/A"}
+                          </div>
+                          <div>
+                            <span className="font-bold">Dominant Hand:</span> {player.dominantHand || "N/A"}
+                          </div>
                         </div>
                       </div>
+                      <Link href={`/players/${player.id}/assessment`}>
+                        <Button className="bg-secondary text-white px-4 py-2 rounded-lg flex items-center">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1">
+                            <path d="M5 12h14"></path>
+                            <path d="M12 5v14"></path>
+                          </svg>
+                          <span>New Assessment</span>
+                        </Button>
+                      </Link>
                     </div>
                     
                     <Separator className="my-4" />
@@ -595,17 +606,7 @@ const PlayerProfile = () => {
                       )}
                     </div>
                     
-                    <div className="mt-4 flex justify-end">
-                      <Link href={`/players/${player.id}/assessment`}>
-                        <Button className="bg-secondary text-white px-4 py-2 rounded-lg flex items-center">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1">
-                            <path d="M5 12h14"></path>
-                            <path d="M12 5v14"></path>
-                          </svg>
-                          <span>New Assessment</span>
-                        </Button>
-                      </Link>
-                    </div>
+                    {/* New Assessment button moved next to player info */}
                   </div>
 
                   <Separator className="my-4" />
