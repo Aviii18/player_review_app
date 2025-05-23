@@ -174,112 +174,128 @@ const VideoPlayer = ({
         </DialogContent>
       </Dialog>
 
-      {/* Tag Dialog */}
+      {/* Tag Dialog - with video visible */}
       <Dialog open={showTagDialog} onOpenChange={setShowTagDialog}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-4xl">
           <DialogHeader>
             <DialogTitle>Tag Video: {title}</DialogTitle>
           </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <label className="text-right text-sm font-medium">Shot Type:</label>
-              <div className="col-span-3">
-                <Select 
-                  value={tags.shotType} 
-                  onValueChange={(value) => handleTagChange(value, 'shotType')}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select shot type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {shotTypes.map(type => (
-                      <SelectItem key={type} value={type}>{type}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Video Player on the left */}
+            <div className="aspect-video bg-black rounded-md overflow-hidden">
+              <video 
+                src={videoUrl}
+                className="w-full h-full"
+                controls
+                autoPlay
+                loop
+              />
             </div>
             
-            <div className="grid grid-cols-4 items-center gap-4">
-              <label className="text-right text-sm font-medium">Ball Speed:</label>
-              <div className="col-span-3">
-                <Select 
-                  value={tags.ballSpeed} 
-                  onValueChange={(value) => handleTagChange(value, 'ballSpeed')}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select ball speed" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {ballSpeeds.map(speed => (
-                      <SelectItem key={speed} value={speed}>{speed}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+            {/* Tagging Form on the right */}
+            <div className="flex flex-col gap-4">
+              <div className="grid grid-cols-12 items-center gap-2">
+                <label className="col-span-4 text-sm font-medium">Shot Type:</label>
+                <div className="col-span-8">
+                  <Select 
+                    value={tags.shotType} 
+                    onValueChange={(value) => handleTagChange(value, 'shotType')}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select shot type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {shotTypes.map(type => (
+                        <SelectItem key={type} value={type}>{type}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
-            </div>
-            
-            <div className="grid grid-cols-4 items-center gap-4">
-              <label className="text-right text-sm font-medium">Reaction Time:</label>
-              <div className="col-span-3">
-                <Select 
-                  value={tags.reactionTime} 
-                  onValueChange={(value) => handleTagChange(value, 'reactionTime')}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select reaction time" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {reactionTimes.map(time => (
-                      <SelectItem key={time} value={time}>{time}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              
+              <div className="grid grid-cols-12 items-center gap-2">
+                <label className="col-span-4 text-sm font-medium">Ball Speed:</label>
+                <div className="col-span-8">
+                  <Select 
+                    value={tags.ballSpeed} 
+                    onValueChange={(value) => handleTagChange(value, 'ballSpeed')}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select ball speed" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {ballSpeeds.map(speed => (
+                        <SelectItem key={speed} value={speed}>{speed}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
-            </div>
-            
-            <div className="grid grid-cols-4 items-center gap-4">
-              <label className="text-right text-sm font-medium">Bat Connect:</label>
-              <div className="col-span-3">
-                <Select 
-                  value={tags.batConnect} 
-                  onValueChange={(value) => handleTagChange(value, 'batConnect')}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select bat connect" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {batConnectOptions.map(option => (
-                      <SelectItem key={option} value={option}>{option}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              
+              <div className="grid grid-cols-12 items-center gap-2">
+                <label className="col-span-4 text-sm font-medium">Reaction Time:</label>
+                <div className="col-span-8">
+                  <Select 
+                    value={tags.reactionTime} 
+                    onValueChange={(value) => handleTagChange(value, 'reactionTime')}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select reaction time" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {reactionTimes.map(time => (
+                        <SelectItem key={time} value={time}>{time}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
-            </div>
-            
-            <div className="grid grid-cols-4 items-center gap-4">
-              <label className="text-right text-sm font-medium">Bat Swing:</label>
-              <div className="col-span-3">
-                <Select 
-                  value={tags.batSwing} 
-                  onValueChange={(value) => handleTagChange(value, 'batSwing')}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select bat swing" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {batSwingOptions.map(option => (
-                      <SelectItem key={option} value={option}>{option}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              
+              <div className="grid grid-cols-12 items-center gap-2">
+                <label className="col-span-4 text-sm font-medium">Bat Connect:</label>
+                <div className="col-span-8">
+                  <Select 
+                    value={tags.batConnect} 
+                    onValueChange={(value) => handleTagChange(value, 'batConnect')}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select bat connect" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {batConnectOptions.map(option => (
+                        <SelectItem key={option} value={option}>{option}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-12 items-center gap-2">
+                <label className="col-span-4 text-sm font-medium">Bat Swing:</label>
+                <div className="col-span-8">
+                  <Select 
+                    value={tags.batSwing} 
+                    onValueChange={(value) => handleTagChange(value, 'batSwing')}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select bat swing" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {batSwingOptions.map(option => (
+                        <SelectItem key={option} value={option}>{option}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              
+              <div className="flex justify-end gap-2 mt-auto">
+                <Button variant="outline" onClick={() => setShowTagDialog(false)}>Cancel</Button>
+                <Button onClick={handleSaveTags}>Save Tags</Button>
               </div>
             </div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowTagDialog(false)}>Cancel</Button>
-            <Button onClick={handleSaveTags}>Save Tags</Button>
-          </DialogFooter>
         </DialogContent>
       </Dialog>
     </>
