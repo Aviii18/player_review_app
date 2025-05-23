@@ -95,10 +95,10 @@ const AssessmentHistoryCard = ({ assessment }: { assessment: PerformanceAssessme
       
       <CardContent className="p-6">
         <Tabs defaultValue="session" className="w-full">
-          <TabsList className="mb-4">
-            <TabsTrigger value="general">General Performance Areas</TabsTrigger>
-            <TabsTrigger value="shots">Shot Specific Areas</TabsTrigger>
-            <TabsTrigger value="session">Assessment Notes</TabsTrigger>
+          <TabsList className="mb-4 flex flex-wrap w-full">
+            <TabsTrigger value="general" className="text-xs sm:text-sm flex-1">General Areas</TabsTrigger>
+            <TabsTrigger value="shots" className="text-xs sm:text-sm flex-1">Shot Specific</TabsTrigger>
+            <TabsTrigger value="session" className="text-xs sm:text-sm flex-1">Assessment Notes</TabsTrigger>
           </TabsList>
           
           {/* General Performance Areas Tab */}
