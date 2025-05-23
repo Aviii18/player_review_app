@@ -440,34 +440,9 @@ const PerformanceAssessment = () => {
 
 
                 
-                {/* Video List */}
-                <div className="space-y-2">
-                  {videos && videos.length > 0 ? (
-                    videos.map((video) => (
-                      <div 
-                        key={video.id} 
-                        className={`p-2 border rounded cursor-pointer transition ${selectedVideo?.id === video.id ? 'border-primary bg-primary/5' : 'border-neutral-200 hover:bg-neutral-100'}`}
-                        onClick={() => handleVideoSelect(video)}
-                      >
-                        <div className="flex justify-between items-center">
-                          <div>
-                            <h5 className="font-medium">{video.title}</h5>
-                            <p className="text-xs text-neutral-500">{new Date(video.recordedDate).toLocaleDateString()}</p>
-                            <div className="flex flex-wrap mt-1 gap-1">
-                              {video.shotType && <span className="text-xs bg-blue-100 text-blue-800 px-1 rounded">{video.shotType}</span>}
-                              {video.ballLength && <span className="text-xs bg-green-100 text-green-800 px-1 rounded">{video.ballLength}</span>}
-                              {video.ballSpeed && <span className="text-xs bg-yellow-100 text-yellow-800 px-1 rounded">{video.ballSpeed}</span>}
-                            </div>
-                          </div>
-                          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-play">
-                            <polygon points="5 3 19 12 5 21 5 3"></polygon>
-                          </svg>
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <p className="text-neutral-500 text-center py-4">No videos found matching filters</p>
-                  )}
+                {/* Video List - Temporarily Hidden */}
+                <div className="p-4 border border-dashed border-gray-300 rounded-lg bg-gray-50 text-center">
+                  <p className="text-neutral-500">Video library coming soon</p>
                 </div>
               </CardContent>
             </Card>
