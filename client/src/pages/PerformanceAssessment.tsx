@@ -334,7 +334,7 @@ const PerformanceAssessment = () => {
 
             <Card className="mb-6">
               <CardHeader>
-                <CardTitle className="text-lg">Video Library</CardTitle>
+                <CardTitle className="text-lg">Video Filters</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2 mb-4">
