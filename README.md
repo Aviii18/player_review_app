@@ -1,3 +1,4 @@
+HEAD
 # Cricket Coaching Application
 
 A comprehensive cricket coaching and performance analysis platform that leverages advanced technologies to provide granular, shot-specific player assessment tools with an intuitive and engaging user experience.
@@ -133,3 +134,5 @@ To switch from in-memory storage to PostgreSQL:
 ### Support
 
 For technical support or feature requests, refer to the codebase documentation or contact the development team.
+=======
+# player_review_app
