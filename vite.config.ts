@@ -14,7 +14,7 @@ export default defineConfig({
             m.cartographer(),
           ),
         ]
-      : []),
+       : []),
   ],
   resolve: {
     alias: {
@@ -27,5 +27,15 @@ export default defineConfig({
   build: {
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
+  },
+  server: {
+    port: 5173, // Frontend port
+    proxy: {
+      '/api': {
+        target: 'http://localhost:5000', // Your backend port
+        changeOrigin: true,
+        secure: false
+      }
+    }
   },
 });

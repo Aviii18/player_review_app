@@ -1,101 +1,70 @@
-import { pgTable, text, serial, integer, boolean, json, timestamp } from "drizzle-orm/pg-core";
-import { createInsertSchema } from "drizzle-zod";
-import { z } from "zod";
+// shared/schema.ts
 
-export const users = pgTable("users", {
-  id: serial("id").primaryKey(),
-  username: text("username").notNull().unique(),
-  password: text("password").notNull(),
-});
+export interface Player {
+  id: string;
+  name: string;
+  age?: number;
+  batting_style?: string;
+  bowling_style?: string;
+  specialization?: string;
+  photo_url?: string;
+  overall_rating?: number;
+  total_assessments?: number;
+  bio?: string;
+  dob?: string; // DATE type from PostgreSQL comes as string in JavaScript
+  height?: number; // DECIMAL(5,2) 
+  weight?: number; // DECIMAL(5,2)
+  batch?: string; // Manually added field
+  position?: string; // Manually added field
+  created_at?: string;
+}
 
-export const insertUserSchema = createInsertSchema(users).pick({
-  username: true,
-  password: true,
-});
+export interface Assessment {
+  id: string;
+  player_id: string;
+  technique_rating: number;
+  fitness_rating: number;
+  game_awareness_rating: number;
+  mental_strength_rating: number;
+  overall_rating: number;
+  notes?: string;
+  session_date?: string; // DATE type comes as string
+  created_at?: string;
+}
 
-export const players = pgTable("players", {
-  id: serial("id").primaryKey(),
-  name: text("name").notNull(),
-  batch: text("batch").notNull(),
-  photoUrl: text("photo_url"),
-  dateOfBirth: text("date_of_birth"),
-  age: integer("age"),
-  bio: text("bio"),
-  battingStyle: text("batting_style"),
-  bowlingStyle: text("bowling_style"),
-  specialization: text("specialization"),
-  yearsOfExperience: integer("years_experience"),
-  height: text("height"),
-  weight: text("weight"),
-  dominantHand: text("dominant_hand"),
-  status: text("status"), // "improving", "stable", "needs focus"
-  joinedDate: timestamp("joined_date").defaultNow(),
-});
+export interface Video {
+  id: string;
+  player_id: string;
+  title: string;
+  file_url: string;
+  file_size?: number; // BIGINT
+  duration?: number; // REAL type
+  tags?: string[]; // TEXT[] array
+  technique_focus?: string;
+  quality_rating?: number;
+  created_at?: string;
+}
 
-export const insertPlayerSchema = createInsertSchema(players).omit({ id: true });
+export interface Session {
+  id: string;
+  name: string;
+  date: string; // DATE type comes as string
+  participants?: string[]; // TEXT[] array
+  duration_minutes?: number;
+  focus_areas?: string[]; // TEXT[] array
+  notes?: string;
+  created_at?: string;
+}
 
-export const performanceAssessments = pgTable("performance_assessments", {
-  id: serial("id").primaryKey(),
-  playerId: integer("player_id").notNull(),
-  weekStart: timestamp("week_start").notNull(),
-  weekEnd: timestamp("week_end").notNull(),
-  notes: text("notes"),
-  isLatest: boolean("is_latest").default(false),
-});
+// Additional utility types for database operations
+export type PlayerInsert = Omit<Player, 'id' | 'created_at' | 'overall_rating' | 'total_assessments'>;
+export type PlayerUpdate = Partial<PlayerInsert>;
 
-export const insertPerformanceAssessmentSchema = createInsertSchema(performanceAssessments).omit({ id: true });
+export type AssessmentInsert = Omit<Assessment, 'id' | 'created_at'>;
+export type AssessmentUpdate = Partial<AssessmentInsert>;
 
-export const performanceMetrics = pgTable("performance_metrics", {
-  id: serial("id").primaryKey(),
-  assessmentId: integer("assessment_id").notNull(),
-  metricType: text("metric_type").notNull(), // "reaction_time", "bat_connect", "cover_drive", "straight_drive" etc.
-  rating: integer("rating").notNull(), // 0-100 for percentage, can be converted to colors
-  value: text("value"), // actual value like "0.65s" for reaction time
-  notes: text("notes"),
-  videoUrl: text("video_url"),
-});
+export type VideoInsert = Omit<Video, 'id' | 'created_at'>;
+export type VideoUpdate = Partial<VideoInsert>;
 
-export const insertPerformanceMetricSchema = createInsertSchema(performanceMetrics).omit({ id: true });
-
-export const videos = pgTable("videos", {
-  id: serial("id").primaryKey(),
-  playerId: integer("player_id").notNull(),
-  title: text("title").notNull(),
-  url: text("url").notNull(),
-  recordedDate: timestamp("recorded_date").notNull(),
-  shotType: text("shot_type"), // "cover_drive", "straight_drive", "pull_shot" etc.
-  ballLength: text("ball_length"), // "full", "good", "short", "yorker", "half-volley"
-  ballSpeed: text("ball_speed"), // "fast", "medium", "slow"
-  batConnect: text("bat_connect"), // "middle", "edge", "bottom", "missed"
-});
-
-export const insertVideoSchema = createInsertSchema(videos).omit({ id: true });
-
-export const problemAreas = pgTable("problem_areas", {
-  id: serial("id").primaryKey(),
-  assessmentId: integer("assessment_id").notNull(),
-  areaType: text("area_type").notNull(), // "bat_connect", "foot_movement", "bat_swing", "weight_shifting"
-  rating: integer("rating").notNull(), // 1-5 stars
-  notes: text("notes"),
-});
-
-export const insertProblemAreaSchema = createInsertSchema(problemAreas).omit({ id: true });
-
-// Types
-export type InsertUser = z.infer<typeof insertUserSchema>;
-export type User = typeof users.$inferSelect;
-
-export type InsertPlayer = z.infer<typeof insertPlayerSchema>;
-export type Player = typeof players.$inferSelect;
-
-export type InsertPerformanceAssessment = z.infer<typeof insertPerformanceAssessmentSchema>;
-export type PerformanceAssessment = typeof performanceAssessments.$inferSelect;
-
-export type InsertPerformanceMetric = z.infer<typeof insertPerformanceMetricSchema>;
-export type PerformanceMetric = typeof performanceMetrics.$inferSelect;
-
-export type InsertVideo = z.infer<typeof insertVideoSchema>;
-export type Video = typeof videos.$inferSelect;
-
-export type InsertProblemArea = z.infer<typeof insertProblemAreaSchema>;
-export type ProblemArea = typeof problemAreas.$inferSelect;
+export type SessionInsert = Omit<Session, 'id' | 'created_at'>;
+export type SessionUpdate = Partial<SessionInsert>;
